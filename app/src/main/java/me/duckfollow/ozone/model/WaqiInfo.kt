@@ -2,7 +2,6 @@ package me.duckfollow.ozone.model
 
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
-import java.util.*
 import kotlin.collections.ArrayList
 
 data class WaqiInfo(
@@ -56,7 +55,7 @@ data class attributions(
 data class city(
     @Expose
     @SerializedName("geo")
-    val geo:Arrays,
+    val geo:Array<Double>,
     @Expose
     @SerializedName("name")
     val name:String,
