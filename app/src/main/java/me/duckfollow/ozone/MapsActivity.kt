@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.drawable.BitmapDrawable
 import android.location.Location
 import android.os.AsyncTask
 import android.os.Bundle
@@ -36,12 +37,12 @@ import me.duckfollow.ozone.view.ViewLoading
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener,
     GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
-    LocationListener {
+    LocationListener, GoogleMap.OnMarkerDragListener,GoogleMap.OnMapClickListener {
 
     private lateinit var mMap: GoogleMap
     private lateinit var googleApiClient: GoogleApiClient
-    var mLat:Double = 0.0
-    var mLong:Double = 0.0
+    var mLat:Double = 13.773227
+    var mLong:Double = 100.5689558
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,19 +64,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         btn_menu.setOnClickListener {
             Menu()
         }
-
-
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         mMap.setOnMarkerClickListener(this)
+        mMap.setOnMarkerDragListener(this)
+        mMap.setOnMapClickListener(this)
     }
 
     override fun onMarkerClick(p0: Marker?): Boolean {
-        val clickCount = p0!!.tag.toString().toInt()
         val i = Intent(this,MainDetailsActivity::class.java)
-        i.putExtra("lat",p0.position.latitude.toString())
+        i.putExtra("lat",p0!!.position.latitude.toString())
         i.putExtra("lon",p0.position.longitude.toString())
         startActivity(i)
         return false
@@ -93,7 +93,27 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         btn_location.setOnClickListener {
             bottomSheetDialogLoading.cancel()
             mMap.clear()
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(LatLng(mLat,mLong)))
+//            mMap.moveCamera(CameraUpdateFactory.newLatLng(LatLng(mLat,mLong)))
+//            mMap.animateCamera(
+//                CameraUpdateFactory.newLatLngZoom(
+//                    LatLng(
+//                        mLat,
+//                        mLong
+//                    ), 12.0f
+//                )
+//            )
+            val marker_user = mMap.addMarker(
+                                                MarkerOptions()
+                                                    .position(
+                                                        LatLng(
+                                                            mLat,
+                                                            mLong
+                                                        )
+                                                    )
+                                                    .icon(BitmapDescriptorFactory.fromBitmap(user_marker()))
+                                            )
+            marker_user.isDraggable = true
+            marker_user.tag = "user_location"
             val url = "https://api.waqi.info/map/bounds/?latlng="+mLat+","+mLong+","+(mLat+1)+","+(mLong+1)+"&token=fe5f8a6aa99f6bfb397762a0cade98a6d78795a6"
             TaskDataLocation().execute(url)
         }
@@ -179,12 +199,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
             }
 
-            //mMap.moveCamera(CameraUpdateFactory.newLatLng(LatLng(dataLocation.data[dataLocation.data.size-1].lat,dataLocation.data[dataLocation.data.size-1].lon)))
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(LatLng(mLat,mLong)))
             mMap.animateCamera(
                 CameraUpdateFactory.newLatLngZoom(
                     LatLng(
-                        dataLocation.data[dataLocation.data.size-1].lat,
-                        dataLocation.data[dataLocation.data.size-1].lon
+                        mLat,
+                        mLong
                     ), 12.0f
                 )
             )
@@ -217,35 +237,106 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         }
 
         fun createImage(width: Int, height: Int, name: String?): Bitmap? {
+            var aqi = 0
+            try {
+                aqi = name!!.toInt()
+            }catch (e:Exception){
 
-            val aqi = name!!.toInt()
-            val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-            val canvas = Canvas(bitmap)
-            val paint2 = Paint()
-
-            if(aqi <=50) {
-                paint2.color = getResources().getColor(R.color.colorGreen)
-            }else if(aqi <= 100) {
-                paint2.color = getResources().getColor(R.color.colorYellow)
-            }else if(aqi <= 150){
-                paint2.color = getResources().getColor(R.color.colorOrange)
-            }else if(aqi <= 200) {
-                paint2.color = getResources().getColor(R.color.colorPink)
-            }else if(aqi <= 300) {
-                paint2.color = getResources().getColor(R.color.colorViolet)
-            }else {
-                paint2.color = getResources().getColor(R.color.colorRed)
             }
+                val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                val canvas = Canvas(bitmap)
+                val paint2 = Paint()
 
-            canvas.drawCircle(width.toFloat()/2, height.toFloat()/2,height.toFloat()/2, paint2)
-            val paint = Paint()
-            paint.color = Color.WHITE
-            paint.textSize = 72f
-            paint.textScaleX = 1f
-            val xPos = (canvas.width / 4)
-            val yPos = (canvas.height / 2)+30
-            canvas.drawText(name, xPos.toFloat(), yPos.toFloat(), paint)
-            return bitmap
+                if (aqi <= 50) {
+                    paint2.color = getResources().getColor(R.color.colorGreen)
+                } else if (aqi <= 100) {
+                    paint2.color = getResources().getColor(R.color.colorYellow)
+                } else if (aqi <= 150) {
+                    paint2.color = getResources().getColor(R.color.colorOrange)
+                } else if (aqi <= 200) {
+                    paint2.color = getResources().getColor(R.color.colorPink)
+                } else if (aqi <= 300) {
+                    paint2.color = getResources().getColor(R.color.colorViolet)
+                } else {
+                    paint2.color = getResources().getColor(R.color.colorRed)
+                }
+
+                canvas.drawCircle(
+                    width.toFloat() / 2,
+                    height.toFloat() / 2,
+                    height.toFloat() / 2,
+                    paint2
+                )
+                val paint = Paint()
+                paint.color = Color.WHITE
+                paint.textSize = 72f
+                paint.textScaleX = 1f
+                val xPos = (canvas.width / 4)
+                val yPos = (canvas.height / 2) + 30
+                canvas.drawText(name, xPos.toFloat(), yPos.toFloat(), paint)
+                return bitmap
         }
+    }
+
+    override fun onMarkerDragEnd(p0: Marker?) {
+        try {
+            mMap.clear()
+            mLat = p0!!.position.latitude
+            mLong = p0.position.longitude
+            val marker_user = mMap.addMarker(
+                MarkerOptions()
+                    .position(
+                        LatLng(
+                            p0.position.latitude,
+                            p0.position.longitude
+                        )
+                    )
+                    .icon(BitmapDescriptorFactory.fromBitmap(user_marker()))
+            )
+            marker_user.isDraggable = true
+            marker_user.tag = "user_location"
+            val url =
+                "https://api.waqi.info/map/bounds/?latlng=" + p0.position.latitude + "," + p0.position.longitude + "," + (p0.position.latitude + 1) + "," + (p0.position.longitude + 1) + "&token=fe5f8a6aa99f6bfb397762a0cade98a6d78795a6"
+            TaskDataLocation().execute(url)
+        }catch (e:Exception){
+
+        }
+    }
+
+    override fun onMarkerDragStart(p0: Marker?) {
+
+    }
+
+    override fun onMarkerDrag(p0: Marker?) {
+
+    }
+
+    override fun onMapClick(p0: LatLng?) {
+        mMap.clear()
+        mLat = p0!!.latitude
+        mLong = p0.longitude
+        val marker_user = mMap.addMarker(
+            MarkerOptions()
+                .position(
+                    LatLng(
+                        p0.latitude,
+                        p0.longitude
+                    )
+                )
+                .icon(BitmapDescriptorFactory.fromBitmap(user_marker()))
+        )
+        marker_user.isDraggable = true
+        marker_user.tag = "user_location"
+        val url = "https://api.waqi.info/map/bounds/?latlng="+p0.latitude+","+p0.longitude+","+(p0.latitude+1)+","+(p0.longitude+1)+"&token=fe5f8a6aa99f6bfb397762a0cade98a6d78795a6"
+        TaskDataLocation().execute(url)
+    }
+
+    fun user_marker():Bitmap{
+        val height = 250
+        val width = 250
+        val bitmapdraw = resources.getDrawable(R.drawable.marker_icon) as BitmapDrawable
+        val b = bitmapdraw.getBitmap()
+        val smallMarker = Bitmap.createScaledBitmap(b, width, height, false)
+        return smallMarker
     }
 }
