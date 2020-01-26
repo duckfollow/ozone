@@ -16,6 +16,8 @@ import android.util.Log
 import android.view.View
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.location.LocationListener
@@ -30,6 +32,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.gson.Gson
 import me.duckfollow.ozone.activity.MainDetailsActivity
+import me.duckfollow.ozone.adapter.LocationListAdapter
 import me.duckfollow.ozone.model.WaqiLocation
 import me.duckfollow.ozone.util.ApiConnection
 import me.duckfollow.ozone.view.ViewLoading
@@ -43,6 +46,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     private lateinit var googleApiClient: GoogleApiClient
     var mLat:Double = 13.773227
     var mLong:Double = 100.5689558
+    lateinit var dataLocation:WaqiLocation
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -85,10 +89,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         val mView = layoutInflater.inflate(R.layout.layout_menu, null)
         val bottomSheetDialogLoading = BottomSheetDialog(this, R.style.BottomSheetDialog)
         bottomSheetDialogLoading.setContentView(mView)
-        val bottomSheet = bottomSheetDialogLoading.findViewById<View>(R.id.design_bottom_sheet)
-        val behavior = BottomSheetBehavior.from(bottomSheet)
-        behavior.peekHeight = Resources.getSystem().getDisplayMetrics().heightPixels* Resources.getSystem().displayMetrics.density.toInt()
+//        val bottomSheet = bottomSheetDialogLoading.findViewById<View>(R.id.design_bottom_sheet)
+//        val behavior = BottomSheetBehavior.from(bottomSheet)
+//        behavior.peekHeight = Resources.getSystem().getDisplayMetrics().heightPixels* Resources.getSystem().displayMetrics.density.toInt()
 
+        val list_location = mView.findViewById<RecyclerView>(R.id.list_location)
         val btn_location = mView.findViewById<Button>(R.id.btn_location)
         btn_location.setOnClickListener {
             bottomSheetDialogLoading.cancel()
@@ -117,6 +122,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
             val url = "https://api.waqi.info/map/bounds/?latlng="+mLat+","+mLong+","+(mLat+1)+","+(mLong+1)+"&token=fe5f8a6aa99f6bfb397762a0cade98a6d78795a6"
             TaskDataLocation().execute(url)
         }
+        val adapter = LocationListAdapter(dataLocation.data)
+        list_location.layoutManager = LinearLayoutManager(this)
+        list_location.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        list_location.adapter = adapter
 
         bottomSheetDialogLoading.show()
     }
@@ -173,7 +182,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         override fun onPostExecute(result: String?) {
             super.onPostExecute(result)
             val gson = Gson()
-            val dataLocation = gson.fromJson<WaqiLocation>(result,WaqiLocation::class.java)
+            dataLocation = gson.fromJson<WaqiLocation>(result,WaqiLocation::class.java)
             Log.d("data_res_location",dataLocation.status)
 
             for (i in 0..dataLocation.data.size-1){

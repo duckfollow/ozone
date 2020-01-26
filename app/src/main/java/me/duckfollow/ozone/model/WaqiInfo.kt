@@ -94,7 +94,10 @@ data class iaqi(
     val t:iaqi_air,
     @Expose
     @SerializedName("w")
-    val w:iaqi_air
+    val w:iaqi_air,
+    @Expose
+    @SerializedName("wg")
+    val wg:iaqi_air
 )
 
 data class iaqi_air(
