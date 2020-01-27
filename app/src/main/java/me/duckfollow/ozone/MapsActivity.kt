@@ -61,8 +61,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
             .addOnConnectionFailedListener(this)
             .build()
 
-        val url = "https://api.waqi.info/map/bounds/?latlng=13.773227,100.5689558,14.773227,101.5689558&token=fe5f8a6aa99f6bfb397762a0cade98a6d78795a6"
+        val url = "https://api.waqi.info/map/bounds/?latlng="/*+mLat+","+mLong+","*/+(mLat+1)+","+(mLong+1)+","+(mLat-1)+","+(mLong-1)+"&token=fe5f8a6aa99f6bfb397762a0cade98a6d78795a6"
+        Log.d("app_url",url)
         TaskDataLocation().execute(url)
+
 
         val btn_menu = findViewById<Button>(R.id.btn_menu)
         btn_menu.setOnClickListener {
@@ -119,7 +121,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                                             )
             marker_user.isDraggable = true
             marker_user.tag = "user_location"
-            val url = "https://api.waqi.info/map/bounds/?latlng="+mLat+","+mLong+","+(mLat+1)+","+(mLong+1)+"&token=fe5f8a6aa99f6bfb397762a0cade98a6d78795a6"
+            val url = "https://api.waqi.info/map/bounds/?latlng="/*+mLat+","+mLong+","*/+(mLat+1)+","+(mLong+1)+","+(mLat-1)+","+(mLong-1)+"&token=fe5f8a6aa99f6bfb397762a0cade98a6d78795a6"
             TaskDataLocation().execute(url)
         }
         val adapter = LocationListAdapter(dataLocation.data)
@@ -305,7 +307,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
             marker_user.isDraggable = true
             marker_user.tag = "user_location"
             val url =
-                "https://api.waqi.info/map/bounds/?latlng=" + p0.position.latitude + "," + p0.position.longitude + "," + (p0.position.latitude + 1) + "," + (p0.position.longitude + 1) + "&token=fe5f8a6aa99f6bfb397762a0cade98a6d78795a6"
+                "https://api.waqi.info/map/bounds/?latlng=" /*+ p0.position.latitude + "," + p0.position.longitude + "," */+ (p0.position.latitude + 1) + "," + (p0.position.longitude + 1)+ "," + (p0.position.latitude - 1) + "," + (p0.position.longitude - 1) + "&token=fe5f8a6aa99f6bfb397762a0cade98a6d78795a6"
             TaskDataLocation().execute(url)
         }catch (e:Exception){
 
@@ -336,7 +338,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         )
         marker_user.isDraggable = true
         marker_user.tag = "user_location"
-        val url = "https://api.waqi.info/map/bounds/?latlng="+p0.latitude+","+p0.longitude+","+(p0.latitude+1)+","+(p0.longitude+1)+"&token=fe5f8a6aa99f6bfb397762a0cade98a6d78795a6"
+        val url = "https://api.waqi.info/map/bounds/?latlng="/*+p0.latitude+","+p0.longitude+","*/+(p0.latitude+1)+","+(p0.longitude+1)+","+(p0.latitude-1)+","+(p0.longitude-1)+"&token=fe5f8a6aa99f6bfb397762a0cade98a6d78795a6"
         TaskDataLocation().execute(url)
     }
 
