@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">ozone</string>
     <string name="title_activity_maps">Map</string>
-    
+
     <string name="txt_good">Air quality is considered satisfactory, and air pollution poses little or no risk</string>
     <string name="txt_moderate">Air quality is acceptable; however, for some pollutants there may be a moderate health concern for a very small number of people who are unusually sensitive to air pollution.</string>
 </resources>

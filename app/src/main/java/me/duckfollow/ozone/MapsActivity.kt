@@ -31,6 +31,7 @@ import com.google.android.gms.maps.model.*
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.gson.Gson
+import me.duckfollow.ozone.activity.ErrorActivity
 import me.duckfollow.ozone.activity.MainDetailsActivity
 import me.duckfollow.ozone.adapter.LocationListAdapter
 import me.duckfollow.ozone.model.WaqiLocation
@@ -63,8 +64,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
         val url = "https://api.waqi.info/map/bounds/?latlng="/*+mLat+","+mLong+","*/+(mLat+1)+","+(mLong+1)+","+(mLat-1)+","+(mLong-1)+"&token=fe5f8a6aa99f6bfb397762a0cade98a6d78795a6"
         Log.d("app_url",url)
-        TaskDataLocation().execute(url)
-
+        TaskDataLocation(mLat,mLong).execute(url)
 
         val btn_menu = findViewById<Button>(R.id.btn_menu)
         btn_menu.setOnClickListener {
@@ -122,7 +122,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
             marker_user.isDraggable = true
             marker_user.tag = "user_location"
             val url = "https://api.waqi.info/map/bounds/?latlng="/*+mLat+","+mLong+","*/+(mLat+1)+","+(mLong+1)+","+(mLat-1)+","+(mLong-1)+"&token=fe5f8a6aa99f6bfb397762a0cade98a6d78795a6"
-            TaskDataLocation().execute(url)
+            TaskDataLocation(mLat,mLong).execute(url)
         }
         val adapter = LocationListAdapter(dataLocation.data)
         list_location.layoutManager = LinearLayoutManager(this)
@@ -172,7 +172,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     }
 
     @SuppressLint("StaticFieldLeak")
-    inner class TaskDataLocation:AsyncTask<String,String,String>(){
+    inner class TaskDataLocation(val lat:Double,val lon:Double):AsyncTask<String,String,String>(){
         val loading = ViewLoading(this@MapsActivity).create()
         override fun onPreExecute() {
             super.onPreExecute()
@@ -183,22 +183,31 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         }
         override fun onPostExecute(result: String?) {
             super.onPostExecute(result)
-            val gson = Gson()
-            dataLocation = gson.fromJson<WaqiLocation>(result,WaqiLocation::class.java)
-            Log.d("data_res_location",dataLocation.status)
+            try {
+                val gson = Gson()
+                dataLocation = gson.fromJson<WaqiLocation>(result, WaqiLocation::class.java)
+                Log.d("data_res_location", dataLocation.status)
 
-            for (i in 0..dataLocation.data.size-1){
-               val marker = mMap.addMarker(
-                                        MarkerOptions()
-                                            .position(
-                                                LatLng(
-                                                    dataLocation.data[i].lat,
-                                                    dataLocation.data[i].lon
-                                                )
-                                            )
-                                            .icon(BitmapDescriptorFactory.fromBitmap(createImage(250,250,dataLocation.data[i].aqi)))
-                                        )
-                marker.tag = i
+                for (i in 0..dataLocation.data.size - 1) {
+                    val marker = mMap.addMarker(
+                        MarkerOptions()
+                            .position(
+                                LatLng(
+                                    dataLocation.data[i].lat,
+                                    dataLocation.data[i].lon
+                                )
+                            )
+                            .icon(
+                                BitmapDescriptorFactory.fromBitmap(
+                                    createImage(
+                                        250,
+                                        250,
+                                        dataLocation.data[i].aqi
+                                    )
+                                )
+                            )
+                    )
+                    marker.tag = i
 
 //                val marker2 = mMap.addGroundOverlay(GroundOverlayOptions()
 //                    .image(BitmapDescriptorFactory.fromBitmap(createImage(2000,2000,dataLocation.data[i].aqi)))
@@ -208,21 +217,24 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 //                    ),2000f))
 //                marker2.tag = i
 
-            }
+                }
 
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(LatLng(mLat,mLong)))
-            mMap.animateCamera(
-                CameraUpdateFactory.newLatLngZoom(
-                    LatLng(
-                        mLat,
-                        mLong
-                    ), 12.0f
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(LatLng(lat, lon)))
+                mMap.animateCamera(
+                    CameraUpdateFactory.newLatLngZoom(
+                        LatLng(
+                            lat,
+                            lon
+                        ), 12.0f
+                    )
                 )
-            )
 
-            Handler().postDelayed(Runnable {
-                loading.cancel()
-            },3500)
+                Handler().postDelayed(Runnable {
+                    loading.cancel()
+                }, 3500)
+            }catch (e:Exception){
+                errorCodeCheck("dataError")
+            }
         }
 
         @SuppressLint("ResourceAsColor")
@@ -290,7 +302,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     }
 
     override fun onMarkerDragEnd(p0: Marker?) {
-        try {
             mMap.clear()
             mLat = p0!!.position.latitude
             mLong = p0.position.longitude
@@ -308,10 +319,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
             marker_user.tag = "user_location"
             val url =
                 "https://api.waqi.info/map/bounds/?latlng=" /*+ p0.position.latitude + "," + p0.position.longitude + "," */+ (p0.position.latitude + 1) + "," + (p0.position.longitude + 1)+ "," + (p0.position.latitude - 1) + "," + (p0.position.longitude - 1) + "&token=fe5f8a6aa99f6bfb397762a0cade98a6d78795a6"
-            TaskDataLocation().execute(url)
-        }catch (e:Exception){
-
-        }
+            TaskDataLocation(mLat,mLong).execute(url)
     }
 
     override fun onMarkerDragStart(p0: Marker?) {
@@ -339,7 +347,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         marker_user.isDraggable = true
         marker_user.tag = "user_location"
         val url = "https://api.waqi.info/map/bounds/?latlng="/*+p0.latitude+","+p0.longitude+","*/+(p0.latitude+1)+","+(p0.longitude+1)+","+(p0.latitude-1)+","+(p0.longitude-1)+"&token=fe5f8a6aa99f6bfb397762a0cade98a6d78795a6"
-        TaskDataLocation().execute(url)
+        TaskDataLocation(mLat,mLong).execute(url)
     }
 
     fun user_marker():Bitmap{
@@ -349,5 +357,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         val b = bitmapdraw.getBitmap()
         val smallMarker = Bitmap.createScaledBitmap(b, width, height, false)
         return smallMarker
+    }
+
+    private fun errorCodeCheck(type:String){
+        val i = Intent(this,ErrorActivity::class.java)
+        startActivity(i)
+        this.finish()
     }
 }
