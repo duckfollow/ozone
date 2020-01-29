@@ -15,7 +15,9 @@ import android.os.Handler
 import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.common.ConnectionResult
@@ -34,6 +36,8 @@ import com.google.gson.Gson
 import me.duckfollow.ozone.activity.ErrorActivity
 import me.duckfollow.ozone.activity.MainDetailsActivity
 import me.duckfollow.ozone.adapter.LocationListAdapter
+import me.duckfollow.ozone.model.AqiModel
+import me.duckfollow.ozone.model.WaqiInfoGeo
 import me.duckfollow.ozone.model.WaqiLocation
 import me.duckfollow.ozone.util.ApiConnection
 import me.duckfollow.ozone.view.ViewLoading
@@ -48,10 +52,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     var mLat:Double = 13.773227
     var mLong:Double = 100.5689558
     lateinit var dataLocation:WaqiLocation
+    lateinit var text_pm:TextView
+    lateinit var txt_station:TextView
+    lateinit var card_view:CardView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
+        initView()
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
@@ -70,6 +78,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         btn_menu.setOnClickListener {
             Menu()
         }
+    }
+
+    private  fun initView(){
+        text_pm = findViewById(R.id.text_pm)
+        txt_station = findViewById(R.id.txt_station)
+        card_view = findViewById(R.id.card_view)
+
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -169,6 +184,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         Log.d("location_app",p0!!.latitude.toString()+"//"+p0.longitude)
         mLat = p0.latitude
         mLong = p0.longitude
+        val url = "https://api.waqi.info/feed/geo:"+p0.latitude+";"+p0.longitude+"/?token=fe5f8a6aa99f6bfb397762a0cade98a6d78795a6"
+        TaskDataRealTime().execute(url)
     }
 
     @SuppressLint("StaticFieldLeak")
@@ -363,5 +380,84 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         val i = Intent(this,ErrorActivity::class.java)
         startActivity(i)
         this.finish()
+    }
+
+    inner class TaskDataRealTime:AsyncTask<String,String,String>(){
+        override fun doInBackground(vararg params: String?): String? {
+            return ApiConnection().getData(params[0].toString())
+        }
+
+        @SuppressLint("ResourceAsColor")
+        override fun onPostExecute(result: String?) {
+            super.onPostExecute(result)
+            try {
+                val gson = Gson()
+                val dataDetails = gson.fromJson<WaqiInfoGeo>(result, WaqiInfoGeo::class.java)
+                Log.d("data_res", result)
+
+                txt_station.text = dataDetails.data.city.name
+
+                try {
+                   dataDetails.data.iaqi.co.v
+                } catch (e: java.lang.Exception) {
+
+                }
+                try {
+                    dataDetails.data.iaqi.no2.v
+                } catch (e: java.lang.Exception) {
+
+                }
+                try {
+                    dataDetails.data.iaqi.o3.v
+                } catch (e: java.lang.Exception) {
+
+                }
+                try {
+                    dataDetails.data.iaqi.pm10.v
+                } catch (e: java.lang.Exception) {
+
+                }
+                try {
+                    text_pm.text = dataDetails.data.iaqi.pm25.v
+//                    try {
+//                        val aqi = dataDetails.data.iaqi.pm25.v.toInt()
+//                        if (aqi <= 50) {
+//                            card_view.setCardBackgroundColor(R.color.colorGreen)
+//                        } else if (aqi <= 100) {
+//                            card_view.setCardBackgroundColor(R.color.colorYellow)
+//                        } else if (aqi <= 150) {
+//                            card_view.setCardBackgroundColor(R.color.colorOrange)
+//                        } else if (aqi <= 200) {
+//                            card_view.setCardBackgroundColor(R.color.colorPink)
+//                        } else if (aqi <= 300) {
+//                            card_view.setCardBackgroundColor(R.color.colorViolet)
+//                        } else {
+//                            card_view.setCardBackgroundColor(R.color.colorRed)
+//                        }
+//                    }catch (e:Exception){
+//
+//                    }
+                } catch (e: java.lang.Exception) {
+
+                }
+                try {
+                    dataDetails.data.iaqi.so2.v
+                } catch (e: java.lang.Exception) {
+
+                }
+                try {
+                    dataDetails.data.iaqi.w.v
+                } catch (e: java.lang.Exception) {
+
+                }
+                try {
+                    dataDetails.data.iaqi.wg.v
+                } catch (e: java.lang.Exception) {
+
+                }
+            }catch (e:Exception){
+
+            }
+        }
     }
 }
