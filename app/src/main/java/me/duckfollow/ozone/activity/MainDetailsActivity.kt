@@ -32,6 +32,7 @@ class MainDetailsActivity : AppCompatActivity() {
     lateinit var btn_back:ImageButton
     lateinit var shimmer_view_container:ShimmerFrameLayout
     lateinit var scroll_view:NestedScrollView
+    lateinit var txt_view_quality:TextView
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,8 +56,10 @@ class MainDetailsActivity : AppCompatActivity() {
         list_iaqi = findViewById(R.id.list_iaqi)
         btn_back = findViewById(R.id.btn_back)
         shimmer_view_container = findViewById(R.id.shimmer_view_container)
+        shimmer_view_container.visibility = View.VISIBLE
         scroll_view = findViewById(R.id.scroll_view)
         scroll_view.visibility = View.GONE
+        txt_view_quality = findViewById(R.id.txt_view_quality)
 
         list_iaqi.layoutManager = LinearLayoutManager(this)
         list_iaqi.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
@@ -106,7 +109,26 @@ class MainDetailsActivity : AppCompatActivity() {
 
                 }
                 try {
-                    data.add(AqiModel("pm25", dataDetails.data.iaqi.pm25.v))
+                    val pm25 = dataDetails.data.iaqi.pm25.v
+                    data.add(AqiModel("pm25", pm25))
+                    try {
+                        val aqi = pm25.toInt()
+                        if (aqi <= 50) {
+                            txt_view_quality.text = getString(R.string.txt_good)
+                        } else if (aqi <= 100) {
+                            txt_view_quality.text = getString(R.string.txt_moderate)
+                        } else if (aqi <= 150) {
+                            txt_view_quality.text = getString(R.string.txt_unhealthy_for_sensitive_groups)
+                        } else if (aqi <= 200) {
+                            txt_view_quality.text = getString(R.string.txt_unhealthy)
+                        } else if (aqi <= 300) {
+                            txt_view_quality.text = getString(R.string.txt_very_unhealthy)
+                        } else {
+                            txt_view_quality.text = getString(R.string.txt_hazardous)
+                        }
+                    }catch (e:Exception){
+
+                    }
                 } catch (e: Exception) {
 
                 }
