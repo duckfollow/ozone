@@ -6,9 +6,9 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.custom_location_list_adapter.view.*
 import me.duckfollow.ozone.R
-import me.duckfollow.ozone.model.Location
+import me.duckfollow.ozone.model.ListModel
 
-class LocationListAdapter (val item:ArrayList<Location>) :RecyclerView.Adapter<ViewHolderLocation>(){
+class LocationListAdapter (val item:ArrayList<ListModel>) :RecyclerView.Adapter<ViewHolderLocation>(){
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolderLocation {
         return ViewHolderLocation(LayoutInflater.from(parent.context).inflate(R.layout.custom_location_list_adapter, parent, false))
     }
@@ -18,7 +18,7 @@ class LocationListAdapter (val item:ArrayList<Location>) :RecyclerView.Adapter<V
     }
 
     override fun onBindViewHolder(holder: ViewHolderLocation, position: Int) {
-        holder.txt_name.text = item[position].station.name
+        holder.txt_name.text = item[position].station_name
         holder.txt_aqi.text = item[position].aqi
     }
 }

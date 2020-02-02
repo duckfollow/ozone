@@ -1,11 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Ozone Not Included</string>
     <string name="title_activity_maps">Map</string>
 
-    <string name="txt_good">Air quality is considered satisfactory, and air pollution poses little or no risk</string>
-    <string name="txt_moderate">Air quality is acceptable; however, for some pollutants there may be a moderate health concern for a very small number of people who are unusually sensitive to air pollution.</string>
-    <string name="txt_unhealthy_for_sensitive_groups">Members of sensitive groups may experience health effects. The general public is not likely to be affected.</string>
-    <string name="txt_unhealthy">Everyone may begin to experience health effects; members of sensitive groups may experience more serious health effects</string>
+    <string name="txt_good">คุณภาพอากาศดี สามารถทำกิจกรรมกลางแจ้งและการท่องเที่ยวได้ตามปกติ</string>
+    <string name="txt_moderate">ประชาชนทั่วไป : สามารถทำกิจกรรมกลางแจ้งได้ตามปกติผู้ที่ต้องดูแลสุขภาพเป็นพิเศษ : หากมีอาการเบื้องต้น เช่น ไอ หายใจลำบาก ระคายเคืองตา ควรลดระยะเวลาการทำกิจกรรมกลางแจ้ง</string>
+    <string name="txt_unhealthy_for_sensitive_groups">ประชาชนทั่วไป : ควรเฝ้าระวังสุขภาพ ถ้ามีอาการเบื้องต้น เช่น ไอ หายใจลำบาก ระคายเคืองตา ควรลดระยะเวลาการทำกิจกรรมกลางแจ้ง หรือใช้อุปกรณ์ป้องกันตนเองหากมีความจำเป็นผู้ที่ต้องดูแลสุขภาพเป็นพิเศษ : ควรลดระยะเวลาการทำกิจกรรมกลางแจ้ง หรือใช้อุปกรณ์ป้องกันตนเองหากมีความจำเป็น ถ้ามีอาการทางสุขภาพ เช่น ไอ หายใจลำบาก ตาอักเสบ แน่นหน้าอก ปวดศีรษะ หัวใจเต้นไม่เป็นปกติ คลื่นไส้ อ่อนเพลีย ควรปรึกษาแพทย์</string>
+    <string name="txt_unhealthy">ทุกคนควรหลีกเลี่ยงกิจกรรมกลางแจ้งหลีกเลี่ยงพื้นที่ที่มีมลพิษทางอากาศสูง หรือใช้อุปกรณ์ป้องกันตนเองหากมีความจำเป็น หากมีอาการทางสุขภาพควรปรึกษาแพทย์</string>
     <string name="txt_very_unhealthy">Health warnings of emergency conditions. The entire population is more likely to be affected.</string>
     <string name="txt_hazardous">Health alert: everyone may experience more serious health effects</string>
 

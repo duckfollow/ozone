@@ -18,6 +18,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.RelativeLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -40,10 +41,13 @@ import me.duckfollow.ozone.activity.LocationMangerActivity
 import me.duckfollow.ozone.activity.MainDetailsActivity
 import me.duckfollow.ozone.adapter.LocationListAdapter
 import me.duckfollow.ozone.model.AqiModel
+import me.duckfollow.ozone.model.ListModel
 import me.duckfollow.ozone.model.WaqiInfoGeo
 import me.duckfollow.ozone.model.WaqiLocation
 import me.duckfollow.ozone.util.ApiConnection
 import me.duckfollow.ozone.view.ViewLoading
+import org.json.JSONArray
+import org.json.JSONObject
 import kotlin.random.Random
 
 
@@ -61,6 +65,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     lateinit var card_view:CardView
     lateinit var btn_show_location:Button
     lateinit var viewMap:View
+    var dataList: ArrayList<ListModel> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -139,7 +144,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
             bottomSheetDialogLoading.cancel()
             myLocation()
         }
-        val adapter = LocationListAdapter(dataLocation.data)
+        val adapter = LocationListAdapter(dataList)
         list_location.layoutManager = LinearLayoutManager(this)
         list_location.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         list_location.adapter = adapter
@@ -221,6 +226,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         mLat = p0.latitude
         mLong = p0.longitude
         val url = "https://api.waqi.info/feed/geo:"+p0.latitude+";"+p0.longitude+"/?token=fe5f8a6aa99f6bfb397762a0cade98a6d78795a6"
+        //Toast.makeText(this@MapsActivity,url,Toast.LENGTH_LONG).show()
         TaskDataRealTime().execute(url)
     }
 
@@ -230,6 +236,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         override fun onPreExecute() {
             super.onPreExecute()
             loading.show()
+            dataList.clear()
         }
         override fun doInBackground(vararg params: String?): String? {
             return ApiConnection().getData(params[0].toString())
@@ -237,18 +244,33 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         override fun onPostExecute(result: String?) {
             super.onPostExecute(result)
             try {
-                val gson = Gson()
-                dataLocation = gson.fromJson<WaqiLocation>(result, WaqiLocation::class.java)
-                Log.d("data_res_location", dataLocation.status)
+                val json = JSONObject(result)
+                val dataLocation = JSONArray(json.getString("data"))
 
-                for (i in 0..dataLocation.data.size - 1) {
-                    var width = 250 + (0..100).random()
+                for (i in 0..dataLocation.length() - 1) {
+                    val dataJSON = JSONObject(dataLocation[i].toString())
+                    val lat = dataJSON.getDouble("lat")
+                    val lon = dataJSON.getDouble("lon")
+                    val aqi = dataJSON.getString("aqi")
+                    val station = JSONObject(dataJSON.getString("station"))
+                    val name = station.getString("name")
+                    try {
+                        dataList.add(
+                            ListModel(
+                                name,
+                                aqi
+                            )
+                        )
+                    }catch (e:Exception){
+
+                    }
+                    var width = 250 + (0..150).random()
                     val marker = mMap.addMarker(
                         MarkerOptions()
                             .position(
                                 LatLng(
-                                    dataLocation.data[i].lat,
-                                    dataLocation.data[i].lon
+                                    lat,
+                                    lon
                                 )
                             )
                             .icon(
@@ -256,20 +278,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                                     createImage(
                                         width,
                                         width,
-                                        dataLocation.data[i].aqi
+                                        aqi
                                     )
                                 )
                             )
                     )
                     marker.tag = i
-
-//                val marker2 = mMap.addGroundOverlay(GroundOverlayOptions()
-//                    .image(BitmapDescriptorFactory.fromBitmap(createImage(2000,2000,dataLocation.data[i].aqi)))
-//                    .position(LatLng(
-//                        dataLocation.data[i].lat,
-//                        dataLocation.data[i].lon
-//                    ),2000f))
-//                marker2.tag = i
 
                 }
 
@@ -434,72 +448,24 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         override fun onPostExecute(result: String?) {
             super.onPostExecute(result)
             try {
-                val gson = Gson()
-                val dataDetails = gson.fromJson<WaqiInfoGeo>(result, WaqiInfoGeo::class.java)
-                Log.d("data_res", result)
-
-                txt_station.text = dataDetails.data.city.name
+                val json = JSONObject(result)
+                val status = json.getString("status")
+                val data = JSONObject(json.getString("data"))
+                val city = JSONObject(data.getString("city"))
+                val name = city.getString("name")
+                txt_station.text = name
 
                 try {
-                   dataDetails.data.iaqi.co.v
-                } catch (e: java.lang.Exception) {
+                    val iaqi = JSONObject(data.getString("iaqi"))
+                    val pm25 = JSONObject(iaqi.getString("pm25"))
+                    val v = pm25.getString("v")
+                    text_pm.text = v
+                }catch (e:Exception){
 
                 }
-                try {
-                    dataDetails.data.iaqi.no2.v
-                } catch (e: java.lang.Exception) {
 
-                }
-                try {
-                    dataDetails.data.iaqi.o3.v
-                } catch (e: java.lang.Exception) {
-
-                }
-                try {
-                    dataDetails.data.iaqi.pm10.v
-                } catch (e: java.lang.Exception) {
-
-                }
-                try {
-                    text_pm.text = dataDetails.data.iaqi.pm25.v
-//                    try {
-//                        val aqi = dataDetails.data.iaqi.pm25.v.toInt()
-//                        if (aqi <= 50) {
-//                            card_view.setCardBackgroundColor(R.color.colorGreen)
-//                        } else if (aqi <= 100) {
-//                            card_view.setCardBackgroundColor(R.color.colorYellow)
-//                        } else if (aqi <= 150) {
-//                            card_view.setCardBackgroundColor(R.color.colorOrange)
-//                        } else if (aqi <= 200) {
-//                            card_view.setCardBackgroundColor(R.color.colorPink)
-//                        } else if (aqi <= 300) {
-//                            card_view.setCardBackgroundColor(R.color.colorViolet)
-//                        } else {
-//                            card_view.setCardBackgroundColor(R.color.colorRed)
-//                        }
-//                    }catch (e:Exception){
-//
-//                    }
-                } catch (e: java.lang.Exception) {
-
-                }
-                try {
-                    dataDetails.data.iaqi.so2.v
-                } catch (e: java.lang.Exception) {
-
-                }
-                try {
-                    dataDetails.data.iaqi.w.v
-                } catch (e: java.lang.Exception) {
-
-                }
-                try {
-                    dataDetails.data.iaqi.wg.v
-                } catch (e: java.lang.Exception) {
-
-                }
             }catch (e:Exception){
-
+                //Toast.makeText(this@MapsActivity,e.toString(),Toast.LENGTH_LONG).show()
             }
         }
     }

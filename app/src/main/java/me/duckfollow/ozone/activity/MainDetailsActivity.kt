@@ -1,5 +1,6 @@
 package me.duckfollow.ozone.activity
 
+import android.annotation.SuppressLint
 import android.os.AsyncTask
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -20,6 +21,7 @@ import me.duckfollow.ozone.model.AqiModel
 import me.duckfollow.ozone.model.WaqiInfo
 import me.duckfollow.ozone.model.WaqiInfoGeo
 import me.duckfollow.ozone.util.ApiConnection
+import org.json.JSONObject
 import java.lang.Exception
 
 class MainDetailsActivity : AppCompatActivity() {
@@ -70,7 +72,7 @@ class MainDetailsActivity : AppCompatActivity() {
         val snapHelper = LinearSnapHelper() // Or PagerSnapHelper
         snapHelper.attachToRecyclerView(list_iaqi)
     }
-
+    @SuppressLint("StaticFieldLeak")
     inner class TaskData:AsyncTask<String,String,String>(){
         override fun onPreExecute() {
             super.onPreExecute()
@@ -83,36 +85,51 @@ class MainDetailsActivity : AppCompatActivity() {
         override fun onPostExecute(result: String?) {
             super.onPostExecute(result)
 
+
             try {
-                val gson = Gson()
-                val dataDetails = gson.fromJson<WaqiInfoGeo>(result, WaqiInfoGeo::class.java)
-                Log.d("data_res", result)
+                val json = JSONObject(result)
+                val status = json.getString("status")
+                val dataJSON = JSONObject(json.getString("data"))
+                val city = JSONObject(dataJSON.getString("city"))
+                val name = city.getString("name")
+                val iaqi = JSONObject(dataJSON.getString("iaqi"))
 
                 try {
-                    data.add(AqiModel("co", dataDetails.data.iaqi.co.v))
+                    val co = JSONObject(iaqi.getString("co"))
+                    val v = co.getString("v")
+                    data.add(AqiModel("co",v))
                 } catch (e: Exception) {
 
                 }
                 try {
-                    data.add(AqiModel("no2", dataDetails.data.iaqi.no2.v))
+                    val no2 = JSONObject(iaqi.getString("no2"))
+                    val v = no2.getString("v")
+                    data.add(AqiModel("no2",v))
                 } catch (e: Exception) {
 
                 }
                 try {
-                    data.add(AqiModel("o3", dataDetails.data.iaqi.o3.v))
+                    val o3 = JSONObject(iaqi.getString("o3"))
+                    val v = o3.getString("v")
+                    data.add(AqiModel("o3",v))
                 } catch (e: Exception) {
 
                 }
                 try {
-                    data.add(AqiModel("pm10", dataDetails.data.iaqi.pm10.v))
+                    val pm10 = JSONObject(iaqi.getString("pm10"))
+                    val v = pm10.getString("v")
+                    data.add(AqiModel("pm10",v))
                 } catch (e: Exception) {
 
                 }
+
                 try {
-                    val pm25 = dataDetails.data.iaqi.pm25.v
-                    data.add(AqiModel("pm25", pm25))
+                    val pm25 = JSONObject(iaqi.getString("pm25"))
+                    val v = pm25.getString("v")
+                    data.add(AqiModel("pm25",v))
+                    txtViewIaqi.text = v
                     try {
-                        val aqi = pm25.toInt()
+                        val aqi = v.toInt()
                         if (aqi <= 50) {
                             txt_view_quality.text = getString(R.string.txt_good)
                         } else if (aqi <= 100) {
@@ -129,28 +146,21 @@ class MainDetailsActivity : AppCompatActivity() {
                     }catch (e:Exception){
 
                     }
-                } catch (e: Exception) {
+                }catch (e:Exception){
 
                 }
+
                 try {
-                    data.add(AqiModel("so2", dataDetails.data.iaqi.so2.v))
+                    val so2 = JSONObject(iaqi.getString("so2"))
+                    val v = so2.getString("v")
+                    data.add(AqiModel("so2",v))
                 } catch (e: Exception) {
 
                 }
-                try {
-                    data.add(AqiModel("w", dataDetails.data.iaqi.w.v))
-                } catch (e: Exception) {
 
-                }
-                try {
-                    data.add(AqiModel("wg", dataDetails.data.iaqi.wg.v))
-                } catch (e: Exception) {
-
-                }
                 adapter.notifyDataSetChanged()
 
-                textViewCityName.text = dataDetails.data.city.name
-                txtViewIaqi.text = dataDetails.data.aqi
+                textViewCityName.text = name
 
                 Handler().postDelayed(Runnable {
                     shimmer_view_container.stopShimmer()
@@ -160,6 +170,85 @@ class MainDetailsActivity : AppCompatActivity() {
             }catch (e:Exception){
 
             }
+
+
+//            try {
+//                val gson = Gson()
+//                val dataDetails = gson.fromJson<WaqiInfoGeo>(result, WaqiInfoGeo::class.java)
+//                Log.d("data_res", result)
+//
+//                try {
+//                    data.add(AqiModel("co", dataDetails.data.iaqi.co.v))
+//                } catch (e: Exception) {
+//
+//                }
+//                try {
+//                    data.add(AqiModel("no2", dataDetails.data.iaqi.no2.v))
+//                } catch (e: Exception) {
+//
+//                }
+//                try {
+//                    data.add(AqiModel("o3", dataDetails.data.iaqi.o3.v))
+//                } catch (e: Exception) {
+//
+//                }
+//                try {
+//                    data.add(AqiModel("pm10", dataDetails.data.iaqi.pm10.v))
+//                } catch (e: Exception) {
+//
+//                }
+//                try {
+//                    val pm25 = dataDetails.data.iaqi.pm25.v
+//                    data.add(AqiModel("pm25", pm25))
+//                    try {
+//                        val aqi = pm25.toInt()
+//                        if (aqi <= 50) {
+//                            txt_view_quality.text = getString(R.string.txt_good)
+//                        } else if (aqi <= 100) {
+//                            txt_view_quality.text = getString(R.string.txt_moderate)
+//                        } else if (aqi <= 150) {
+//                            txt_view_quality.text = getString(R.string.txt_unhealthy_for_sensitive_groups)
+//                        } else if (aqi <= 200) {
+//                            txt_view_quality.text = getString(R.string.txt_unhealthy)
+//                        } else if (aqi <= 300) {
+//                            txt_view_quality.text = getString(R.string.txt_very_unhealthy)
+//                        } else {
+//                            txt_view_quality.text = getString(R.string.txt_hazardous)
+//                        }
+//                    }catch (e:Exception){
+//
+//                    }
+//                } catch (e: Exception) {
+//
+//                }
+//                try {
+//                    data.add(AqiModel("so2", dataDetails.data.iaqi.so2.v))
+//                } catch (e: Exception) {
+//
+//                }
+//                try {
+//                    data.add(AqiModel("w", dataDetails.data.iaqi.w.v))
+//                } catch (e: Exception) {
+//
+//                }
+//                try {
+//                    data.add(AqiModel("wg", dataDetails.data.iaqi.wg.v))
+//                } catch (e: Exception) {
+//
+//                }
+//                adapter.notifyDataSetChanged()
+//
+//                textViewCityName.text = dataDetails.data.city.name
+//                txtViewIaqi.text = dataDetails.data.aqi
+//
+//                Handler().postDelayed(Runnable {
+//                    shimmer_view_container.stopShimmer()
+//                    shimmer_view_container.visibility = View.GONE
+//                    scroll_view.visibility = View.VISIBLE
+//                },1000)
+//            }catch (e:Exception){
+//
+//            }
         }
     }
 }

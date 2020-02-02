@@ -27,7 +27,7 @@ class ApiConnection{
             return response
         } catch (e: Exception) {
             e.printStackTrace()
-            return null
+            return e.toString()
         } finally {
             connection?.disconnect()
         }
