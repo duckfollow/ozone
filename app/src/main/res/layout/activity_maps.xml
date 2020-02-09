@@ -64,16 +64,16 @@
                     android:text="ตำแหน่งของคุณ"
                     android:textStyle="bold"
                     android:background="@drawable/bg_btn_action_hover_corner"
+                    android:layout_marginRight="10dp"
                     />
                 <ImageButton
+                    android:id="@+id/btn_profile"
                     android:padding="10dp"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:src="@drawable/ic_more_24dp"
                     android:background="@drawable/bg_btn_action_hover_square"
                     />
-
-
             </LinearLayout>
 
         </RelativeLayout>
