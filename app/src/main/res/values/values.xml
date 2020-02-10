@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="ZoomEngine">
+        <attr format="boolean" name="hasClickableChildren"/>
+        <attr format="boolean" name="overScrollHorizontal"/>
+        <attr format="boolean" name="overScrollVertical"/>
+        <attr format="boolean" name="overPinchable"/>
+        <attr format="boolean" name="zoomEnabled"/>
+        <attr format="boolean" name="flingEnabled"/>
+        <attr format="boolean" name="scrollEnabled"/>
+        <attr format="boolean" name="oneFingerScrollEnabled"/>
+        <attr format="boolean" name="twoFingersScrollEnabled"/>
+        <attr format="boolean" name="threeFingersScrollEnabled"/>
+        <attr format="boolean" name="allowFlingInOverscroll"/>
+        <attr format="boolean" name="verticalPanEnabled"/>
+        <attr format="boolean" name="horizontalPanEnabled"/>
+        <attr format="float" name="minZoom"/>
+        <attr format="float" name="maxZoom"/>
+        <attr format="enum" name="minZoomType">
+            <enum name="zoom" value="0"/>
+            <enum name="realZoom" value="1"/>
+        </attr>
+        <attr format="enum" name="maxZoomType">
+            <enum name="zoom" value="0"/>
+            <enum name="realZoom" value="1"/>
+        </attr>
+        <attr format="enum" name="transformation">
+            <enum name="centerInside" value="0"/>
+            <enum name="centerCrop" value="1"/>
+            <enum name="none" value="2"/>
+        </attr>
+        <attr name="transformationGravity">
+            <flag name="auto" value="0"/>
+            <flag name="top" value="0x30"/>
+            <flag name="bottom" value="0x50"/>
+            <flag name="left" value="0x03"/>
+            <flag name="right" value="0x05"/>
+            <flag name="center_vertical" value="0x10"/>
+            <flag name="center_horizontal" value="0x01"/>
+            <flag name="center" value="0x11"/>
+        </attr>
+        <attr name="alignment">
+            <flag name="top" value="0x01"/>
+            <flag name="bottom" value="0x02"/>
+            <flag name="center_vertical" value="0x03"/>
+            <flag name="none_vertical" value="0x04"/>
+            <flag name="left" value="0x10"/>
+            <flag name="right" value="0x20"/>
+            <flag name="center_horizontal" value="0x30"/>
+            <flag name="none_horizontal" value="0x40"/>
+            <flag name="center" value="0x33"/>
+            <flag name="none" value="0x44"/>
+        </attr>
+        <attr format="integer" name="animationDuration"/>
+    </declare-styleable>
+
+    <declare-styleable name="SwipeRevealLayout">
+        <attr name="dragEdge">
+            <flag name="left" value="1" />
+            <flag name="right" value="2" />
+            <flag name="top" value="4" />
+            <flag name="bottom" value="8" />
+        </attr>
+
+        <attr name="mode">
+            <enum name="normal" value="0" />
+            <enum name="same_level"   value="1" />
+        </attr>
+
+        <attr name="flingVelocity" format="integer" />
+
+        <attr name="minDistRequestDisallowParent" format="dimension" />
+    </declare-styleable>
+
+    <declare-styleable name="ucrop_UCropView">
+
+        <!--Crop image view-->
+        <attr name="ucrop_aspect_ratio_x" format="float"/>
+        <attr name="ucrop_aspect_ratio_y" format="float"/>
+
+        <!--Overlay view-->
+        <attr name="ucrop_show_oval_crop_frame" format="boolean"/>
+        <attr name="ucrop_circle_dimmed_layer" format="boolean"/>
+        <attr name="ucrop_dimmed_color" format="color"/>
+
+        <attr name="ucrop_grid_stroke_size" format="dimension"/>
+        <attr name="ucrop_grid_color" format="color"/>
+        <attr name="ucrop_grid_row_count" format="integer"/>
+        <attr name="ucrop_grid_column_count" format="integer"/>
+        <attr name="ucrop_show_grid" format="boolean"/>
+
+        <attr name="ucrop_frame_stroke_size" format="dimension"/>
+        <attr name="ucrop_frame_color" format="color"/>
+        <attr name="ucrop_show_frame" format="boolean"/>
+
+    </declare-styleable>
+
+    <declare-styleable name="ucrop_AspectRatioTextView">
+
+        <attr name="ucrop_artv_ratio_title" format="string"/>
+
+        <attr name="ucrop_artv_ratio_x" format="float"/>
+        <attr name="ucrop_artv_ratio_y" format="float"/>
+
+    </declare-styleable>
+
+    <integer name="ucrop_progress_loading_anim_time">1500</integer>
+
+</resources>
