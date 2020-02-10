@@ -72,4 +72,5 @@
     <string name="file_provider_authorities">com.prasit.theboxshop</string>
     <string name="channel_name">ucrop_chanel</string>
     <string name="channel_description">ucrop result image</string>
+    <string name="permission_camera">permission is camera.</string>
 </resources>

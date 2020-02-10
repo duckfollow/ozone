@@ -33,6 +33,12 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.database.*
 import com.google.gson.Gson
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.EncodeHintType
+import com.google.zxing.MultiFormatWriter
+import com.google.zxing.WriterException
+import com.google.zxing.common.BitMatrix
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import kotlinx.android.synthetic.main.activity_maps.*
 import me.duckfollow.ozone.activity.ErrorActivity
 import me.duckfollow.ozone.activity.LocationMangerActivity
@@ -49,7 +55,8 @@ import me.duckfollow.ozone.utils.ConvertImagetoBase64
 import me.duckfollow.ozone.view.ViewLoading
 import org.json.JSONArray
 import org.json.JSONObject
-import java.util.HashMap
+import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.random.Random
 
 
@@ -74,8 +81,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     lateinit var myRefUser: DatabaseReference
     lateinit var myRefLocation: DatabaseReference
     lateinit var myRefaddLocation: DatabaseReference
-
-    lateinit var markerTest:Marker
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -175,6 +180,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                             )
                             .icon(BitmapDescriptorFactory.fromBitmap(imgBitmap))
                     )
+                    marker.zIndex = 1F
                     hashMapMarker.put(p0.key.toString(),marker);
                     Log.d("key_event2",p0.key.toString())
                 }catch (e:Exception){

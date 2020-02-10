@@ -1,5 +1,6 @@
 package me.duckfollow.ozone.activity
 
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.provider.Settings
@@ -51,10 +52,14 @@ class ScanActivity : AppCompatActivity(), ZXingScannerView.ResultHandler {
 
                 val map = HashMap<String, Any>()
                 map.put("key",key[1])
-                myRefUser.child(android_id+"/subscribe/"+key[1]+"/").updateChildren(map)
+                myRefUser.child(android_id+"/subscribe/"+key[1]+"/").updateChildren(map).addOnSuccessListener {
+                    val i_success = Intent(this,SuccessActivity::class.java)
+                    startActivity(i_success)
+                    this.finish()
+                }
 
             }else {
-                Toast.makeText(this,"No",Toast.LENGTH_LONG).show()
+                Toast.makeText(this,"try again",Toast.LENGTH_LONG).show()
             }
         }catch (e:Exception){
 

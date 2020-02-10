@@ -18,9 +18,20 @@ import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.firebase.database.*
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.MultiFormatWriter
+import com.google.zxing.WriterException
+import com.google.zxing.common.BitMatrix
 import me.duckfollow.ozone.R
+import me.duckfollow.ozone.adapter.FamilyAdapter
+import me.duckfollow.ozone.model.FamilyModel
 import me.duckfollow.ozone.simple.BaseActivity
 import me.duckfollow.ozone.user.UserProfile
 import me.duckfollow.ozone.utils.ConvertImagetoBase64
@@ -36,6 +47,10 @@ class ProfileActivity : AppCompatActivity() {
     lateinit var view_profile:RelativeLayout
     lateinit var img_profile:ImageView
     lateinit var btn_qr_scan:ImageButton
+    lateinit var qr_code_id:ImageView
+    lateinit var text_id:TextView
+    lateinit var list_family:RecyclerView
+
     private val requestMode = 23
     private var mAlertDialog: AlertDialog? = null
     private var fragment: UCropFragment? = null
@@ -54,9 +69,23 @@ class ProfileActivity : AppCompatActivity() {
 
     lateinit var myRefUser: DatabaseReference
 
+    lateinit var android_id:String
+    val QRcodeWidth = 500
+    private val IMAGE_DIRECTORY = "/QRcodeDemonuts"
+
+    lateinit var myRefLocation: DatabaseReference
+    lateinit var myRefaddLocation: DatabaseReference
+
+    val dataFamily = ArrayList<FamilyModel>()
+    lateinit var adapter:FamilyAdapter
+
+    private val REQUEST_CAMERA = 24
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
+        android_id = Settings.Secure.getString(this.getContentResolver(),
+            Settings.Secure.ANDROID_ID);
         initView()
         btn_back.setOnClickListener {
             supportFinishAfterTransition()
@@ -74,11 +103,76 @@ class ProfileActivity : AppCompatActivity() {
 
         val database = FirebaseDatabase.getInstance().reference
         myRefUser = database.child("user/")
+        myRefLocation = database.child("user/"+android_id+"/subscribe/")
+        myRefaddLocation = database.child("location/")
 
         btn_qr_scan.setOnClickListener {
-            val i_scan = Intent(this,ScanActivity::class.java)
-            startActivity(i_scan)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN && ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.CAMERA
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                requestPermission(
+                    Manifest.permission.CAMERA,
+                    getString(R.string.permission_camera),
+                    REQUEST_CAMERA
+                )
+            } else {
+                val i_scan = Intent(this, ScanActivity::class.java)
+                startActivity(i_scan)
+            }
         }
+
+        try {
+            val qr_code = "https://play.google.com/store/apps/details?id=me.duckfollow.ozone&"+android_id
+            qr_code_id.setImageBitmap(TextToImageEncode(qr_code))
+        }catch (e:Exception){
+
+        }
+        text_id.text = android_id
+
+        list_family.layoutManager = LinearLayoutManager(this)
+        list_family.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        adapter = FamilyAdapter(dataFamily)
+        list_family.adapter = adapter
+        list_family.apply {
+            layoutManager = StaggeredGridLayoutManager(4,StaggeredGridLayoutManager.VERTICAL)
+        }
+
+        val addLocation = object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+
+            }
+            override fun onDataChange(p0: DataSnapshot) {
+
+                val lat = p0.child("latitude").getValue().toString()
+                val long = p0.child("longitude").getValue().toString()
+                val img = p0.child("img").getValue().toString()
+
+                dataFamily.add(FamilyModel(img,lat,long))
+                adapter.notifyDataSetChanged()
+            }
+        }
+
+        val locationListener = object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+                val i = p0.children.iterator()
+                dataFamily.clear()
+                while (i.hasNext()) {
+                    val key = (i.next() as DataSnapshot).key
+                    Log.d("key_event" ,key)
+
+                    myRefaddLocation.child(key!!).addValueEventListener(addLocation)
+                }
+                adapter.notifyDataSetChanged()
+            }
+        }
+
+        myRefLocation.addValueEventListener(locationListener)
 
     }
 
@@ -87,6 +181,9 @@ class ProfileActivity : AppCompatActivity() {
         view_profile = findViewById(R.id.view_profile)
         img_profile = findViewById(R.id.img_profile)
         btn_qr_scan = findViewById(R.id.btn_qr_scan)
+        qr_code_id = findViewById(R.id.qr_code_id)
+        text_id = findViewById(R.id.text_id)
+        list_family = findViewById(R.id.list_family)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -110,8 +207,7 @@ class ProfileActivity : AppCompatActivity() {
             }
 
             if (requestCode == UCrop.REQUEST_CROP) {
-                val android_id = Settings.Secure.getString(this.getContentResolver(),
-                    Settings.Secure.ANDROID_ID);
+
                 val uri = UCrop.getOutput(data!!)
                 val x = getBitmapFromUri(uri!!)
                 val b = ConvertImagetoBase64().getResizedBitmap(x,250,250)
@@ -135,6 +231,44 @@ class ProfileActivity : AppCompatActivity() {
         val image = BitmapFactory.decodeFileDescriptor(fileDescriptor)
         parcelFileDescriptor.close()
         return image
+    }
+
+    @Throws(WriterException::class)
+    private fun TextToImageEncode(Value: String): Bitmap? {
+        val bitMatrix: BitMatrix
+        try {
+            bitMatrix = MultiFormatWriter().encode(
+                Value,
+                BarcodeFormat.QR_CODE,
+                QRcodeWidth, QRcodeWidth, null
+            )
+
+        } catch (Illegalargumentexception: IllegalArgumentException) {
+
+            return null
+        }
+
+        val bitMatrixWidth = bitMatrix.getWidth()
+
+        val bitMatrixHeight = bitMatrix.getHeight()
+
+        val pixels = IntArray(bitMatrixWidth * bitMatrixHeight)
+
+        for (y in 0 until bitMatrixHeight) {
+            val offset = y * bitMatrixWidth
+
+            for (x in 0 until bitMatrixWidth) {
+
+                pixels[offset + x] = if (bitMatrix.get(x, y))
+                    resources.getColor(R.color.black)
+                else
+                    resources.getColor(R.color.white)
+            }
+        }
+        val bitmap = Bitmap.createBitmap(bitMatrixWidth, bitMatrixHeight, Bitmap.Config.ARGB_4444)
+
+        bitmap.setPixels(pixels, 0, 500, 0, 0, bitMatrixWidth, bitMatrixHeight)
+        return bitmap
     }
 
     private fun pickFromGallery() {

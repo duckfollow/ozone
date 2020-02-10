@@ -21,9 +21,10 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".activity.SuccessActivity"></activity>
         <activity
             android:name=".activity.ScanActivity"
-            android:theme="@style/AppThemeTransparent"></activity>
+            android:theme="@style/AppThemeTransparent" />
         <activity android:name=".activity.ProfileActivity" />
         <activity android:name=".activity.LocationMangerActivity" />
         <activity android:name=".activity.ErrorActivity" />
