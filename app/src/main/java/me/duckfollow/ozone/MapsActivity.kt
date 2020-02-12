@@ -11,6 +11,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.provider.Settings
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
@@ -76,6 +77,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     lateinit var btn_show_location:Button
     lateinit var viewMap:View
     lateinit var btn_profile: ImageButton
+    lateinit var text_pm_details:TextView
     var dataList: ArrayList<ListModel> = ArrayList()
 
     lateinit var myRefUser: DatabaseReference
@@ -129,6 +131,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         card_view = findViewById(R.id.card_view)
         btn_show_location = findViewById(R.id.btn_show_location)
         btn_profile = findViewById(R.id.btn_profile)
+        text_pm_details = findViewById(R.id.text_pm_details)
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -245,7 +248,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         var img = user_marker()
         if(UserProfile(this).getImageBase64() != ""){
             val b = ConvertImagetoBase64().base64ToBitmap(UserProfile(this).getImageBase64())
-            img = getCroppedBitmap(b)
+            img = getCroppedBitmap(ConvertImagetoBase64().getResizedBitmap(b,150,150))
         }
         mMap.clear()
         val marker_user = mMap.addMarker(
@@ -256,7 +259,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                         mLong
                     )
                 )
-                .icon(BitmapDescriptorFactory.fromBitmap(img))
+                .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView()))
         )
         marker_user.isDraggable = true
         marker_user.tag = "user_location"
@@ -288,6 +291,28 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
     //return _bmp;
     return output;
 }
+
+    private fun getMarkerBitmapFromView ():Bitmap {
+        val customMarkerView = (getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater).inflate(R.layout.marker, null)
+        val markerImageView = customMarkerView.findViewById<ImageView>(R.id.profile_image)
+        var img = user_marker()
+        if(UserProfile(this).getImageBase64() != ""){
+            val b = ConvertImagetoBase64().base64ToBitmap(UserProfile(this).getImageBase64())
+            img = getCroppedBitmap(ConvertImagetoBase64().getResizedBitmap(b,150,150))
+        }
+        markerImageView.setImageBitmap(img)
+        customMarkerView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        customMarkerView.layout(0, 0, customMarkerView.getMeasuredWidth(), customMarkerView.getMeasuredHeight());
+        customMarkerView.buildDrawingCache();
+        val returnedBitmap = Bitmap.createBitmap(customMarkerView.getMeasuredWidth(), customMarkerView.getMeasuredHeight(),
+            Bitmap.Config.ARGB_8888);
+        val canvas = Canvas(returnedBitmap);
+        val drawable = customMarkerView.getBackground();
+        if (drawable != null)
+            drawable.draw(canvas);
+        customMarkerView.draw(canvas);
+        return returnedBitmap
+    }
 
     override fun onStart() {
         super.onStart()
@@ -504,7 +529,7 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
         var img = user_marker()
         if(UserProfile(this).getImageBase64() != ""){
             val b = ConvertImagetoBase64().base64ToBitmap(UserProfile(this).getImageBase64())
-            img = getCroppedBitmap(b)
+            img = getCroppedBitmap(ConvertImagetoBase64().getResizedBitmap(b,150,150))
         }
             mMap.clear()
             mLat = p0!!.position.latitude
@@ -517,7 +542,7 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
                             p0.position.longitude
                         )
                     )
-                    .icon(BitmapDescriptorFactory.fromBitmap(img))
+                    .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView()))
             )
             marker_user.isDraggable = true
             marker_user.tag = "user_location"
@@ -539,7 +564,7 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
         var img = user_marker()
         if(UserProfile(this).getImageBase64() != ""){
             val b = ConvertImagetoBase64().base64ToBitmap(UserProfile(this).getImageBase64())
-            img = getCroppedBitmap(b)
+            img = getCroppedBitmap(ConvertImagetoBase64().getResizedBitmap(b,150,150))
         }
 
         mMap.clear()
@@ -553,7 +578,7 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
                         p0.longitude
                     )
                 )
-                .icon(BitmapDescriptorFactory.fromBitmap(img))
+                .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView()))
         )
         marker_user.isDraggable = true
         marker_user.tag = "user_location"
@@ -598,6 +623,38 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
                     val pm25 = JSONObject(iaqi.getString("pm25"))
                     val v = pm25.getString("v")
                     text_pm.text = v
+
+                    try {
+                        val aqi = v.toInt()
+                        if (aqi <= 50) {
+                            text_pm.setTextColor(R.color.green)
+                            text_pm_details.text = "ดี"
+                            text_pm_details.setTextColor(R.color.green)
+                        }else if (aqi>50 && aqi <=100) {
+                            text_pm.setTextColor(R.color.yellow)
+                            text_pm_details.text = "ปานกลาง"
+                            text_pm_details.setTextColor(R.color.yellow)
+                        }else if (aqi > 100 && aqi <= 150) {
+                            text_pm.setTextColor(R.color.orange)
+                            text_pm_details.text = "ไม่ดีต่อสุขภาพผู้ป่วยภูมิแพ้"
+                            text_pm_details.setTextColor(R.color.orange)
+                        }else if (aqi > 150 && aqi < 200) {
+                            text_pm.setTextColor(R.color.red)
+                            text_pm_details.text = "ไม่ดีต่อสุขภาพ"
+                            text_pm_details.setTextColor(R.color.red)
+                        }else if (aqi < 200 && aqi <= 300) {
+                            text_pm.setTextColor(R.color.violet)
+                            text_pm_details.text = "ไม่ดีต่อสุขภาพมาก"
+                            text_pm_details.setTextColor(R.color.violet)
+                        } else {
+                            text_pm.setTextColor(R.color.super_red)
+                            text_pm_details.text = "อันตราย"
+                            text_pm_details.setTextColor(R.color.super_red)
+                        }
+                    }catch (e:Exception) {
+
+                    }
+
                 }catch (e:Exception){
 
                 }
