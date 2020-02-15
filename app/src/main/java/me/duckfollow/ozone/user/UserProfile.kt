@@ -28,6 +28,30 @@ class UserProfile {
         return User.getString("base64","")
     }
 
+    fun setMapTutorial(isShow:String){
+        this.setUserData("MapTutorial", isShow)
+    }
+
+    fun getMapTutorial():String {
+        return User.getString("MapTutorial","true")
+    }
+
+    fun setMainDetailsTutorial(isShow:String){
+        this.setUserData("MainDetailsTutorial", isShow)
+    }
+
+    fun getMainDetailsTutorial():String {
+        return User.getString("MainDetailsTutorial","true")
+    }
+
+    fun setProfileTutorial(isShow:String){
+        this.setUserData("ProfileTutorial", isShow)
+    }
+
+    fun getProfileTutorial():String {
+        return User.getString("ProfileTutorial","true")
+    }
+
     fun setUserData(key:String,value:String){
         editor = User.edit()
         editor.putString(key, value)

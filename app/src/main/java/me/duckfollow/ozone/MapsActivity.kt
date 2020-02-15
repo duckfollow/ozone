@@ -20,6 +20,8 @@ import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityOptionsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.getkeepsafe.taptargetview.TapTarget
+import com.getkeepsafe.taptargetview.TapTargetView
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.location.LocationListener
@@ -78,6 +80,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     lateinit var viewMap:View
     lateinit var btn_profile: ImageButton
     lateinit var text_pm_details:TextView
+    lateinit var btn_menu:Button
     var dataList: ArrayList<ListModel> = ArrayList()
 
     lateinit var myRefUser: DatabaseReference
@@ -103,7 +106,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         Log.d("app_url",url)
         TaskDataLocation(mLat,mLong).execute(url)
 
-        val btn_menu = findViewById<Button>(R.id.btn_menu)
         btn_menu.setOnClickListener {
             Menu()
         }
@@ -123,6 +125,57 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         myRefUser = database.child("location/"+android_id+"/")
         myRefLocation = database.child("user/"+android_id+"/subscribe/")
         myRefaddLocation = database.child("location/")
+
+
+
+    }
+
+    fun showProfile() {
+        TapTargetView.showFor(this,
+            TapTarget.forView(btn_profile,"โปรไฟล์ของคุณ", "คุณสามารถแก้ไขรูป และแสกนเพิ่มเพื่อนได้").cancelable(false),
+            object : TapTargetView.Listener() {
+                override fun onTargetClick(view: TapTargetView) {
+                    super.onTargetClick(view)
+                    showMenuLocation()
+                }
+            })
+    }
+
+    fun showMenuLocation () {
+        TapTargetView.showFor(this,
+            TapTarget.forView(btn_show_location,"ตำแหน่งปัจจุบัน", "คุณสามารถดูตำแหน่งปัจจุบันของคุณได้ และสามารถลาก เพื่อย้ายตำแหน่ง").cancelable(false),
+            object : TapTargetView.Listener() {
+                override fun onTargetClick(view: TapTargetView) {
+                    super.onTargetClick(view)
+                    showList()
+                }
+            })
+    }
+
+    fun showList() {
+        TapTargetView.showFor(this,
+            TapTarget.forView(btn_menu,"ข้อมูลเพิ่มเติม", "คุณสามารถดูรายการทั้งหมดที่แสดงอยู่บนแผนที่ได้").cancelable(false),
+            object : TapTargetView.Listener() {
+                override fun onTargetClick(view: TapTargetView) {
+                    super.onTargetClick(view)
+                    showViewMap()
+                }
+            })
+    }
+
+    fun showViewMap(){
+        TapTargetView.showFor(this,
+            TapTarget.forView(viewMap,"คลิกที่หมุด", "คลิกเพื่อแสดงรายละเอียดต่างๆ").cancelable(false),
+            object : TapTargetView.Listener() {
+                override fun onTargetClick(view: TapTargetView) {
+                    super.onTargetClick(view)
+                    UserProfile(this@MapsActivity).setMapTutorial(false.toString())
+                    val i = Intent(this@MapsActivity,MainDetailsActivity::class.java)
+                    i.putExtra("lat","13.773227")
+                    i.putExtra("lon","100.5689558")
+                    startActivity(i)
+                }
+            })
     }
 
     private  fun initView(){
@@ -132,6 +185,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         btn_show_location = findViewById(R.id.btn_show_location)
         btn_profile = findViewById(R.id.btn_profile)
         text_pm_details = findViewById(R.id.text_pm_details)
+        btn_menu = findViewById(R.id.btn_menu)
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -146,7 +200,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
             val layoutParams = view_compass.layoutParams as RelativeLayout.LayoutParams
             // position on right bottom
             layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
-            layoutParams.setMargins(0, 600, 30, 0); // 160 la truc y , 30 la  truc x
+            layoutParams.setMargins(0, 660, 30, 0); // 160 la truc y , 30 la  truc x
         }catch (e:java.lang.Exception){
             Log.e("error_view",e.toString())
         }
@@ -161,6 +215,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                 val lat = p0.child("latitude").getValue().toString()
                 val long = p0.child("longitude").getValue().toString()
                 val img = p0.child("img").getValue().toString()
+                UserProfile(this@MapsActivity).setImageBase64(img)
 
                 try {
                     val markerRemove = hashMapMarker.get(p0.key.toString());
@@ -455,6 +510,9 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
                     }catch (e:java.lang.Exception){
 
                     }
+                    if(UserProfile(this@MapsActivity).getMapTutorial().toBoolean()){
+                        showProfile()
+                    }
                 }, 3500)
             }catch (e:Exception){
                 errorCodeCheck("dataError")
@@ -627,29 +685,29 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
                     try {
                         val aqi = v.toInt()
                         if (aqi <= 50) {
-                            text_pm.setTextColor(R.color.green)
+                            text_pm.setTextColor(resources.getColor(R.color.green))
                             text_pm_details.text = "ดี"
-                            text_pm_details.setTextColor(R.color.green)
+                            text_pm_details.setTextColor(resources.getColor(R.color.green))
                         }else if (aqi>50 && aqi <=100) {
-                            text_pm.setTextColor(R.color.yellow)
+                            text_pm.setTextColor(resources.getColor(R.color.yellow))
                             text_pm_details.text = "ปานกลาง"
-                            text_pm_details.setTextColor(R.color.yellow)
+                            text_pm_details.setTextColor(resources.getColor(R.color.yellow))
                         }else if (aqi > 100 && aqi <= 150) {
-                            text_pm.setTextColor(R.color.orange)
+                            text_pm.setTextColor(resources.getColor(R.color.orange))
                             text_pm_details.text = "ไม่ดีต่อสุขภาพผู้ป่วยภูมิแพ้"
-                            text_pm_details.setTextColor(R.color.orange)
+                            text_pm_details.setTextColor(resources.getColor(R.color.orange))
                         }else if (aqi > 150 && aqi < 200) {
-                            text_pm.setTextColor(R.color.red)
+                            text_pm.setTextColor(resources.getColor(R.color.red))
                             text_pm_details.text = "ไม่ดีต่อสุขภาพ"
-                            text_pm_details.setTextColor(R.color.red)
+                            text_pm_details.setTextColor(resources.getColor(R.color.red))
                         }else if (aqi < 200 && aqi <= 300) {
-                            text_pm.setTextColor(R.color.violet)
+                            text_pm.setTextColor(resources.getColor(R.color.violet))
                             text_pm_details.text = "ไม่ดีต่อสุขภาพมาก"
-                            text_pm_details.setTextColor(R.color.violet)
+                            text_pm_details.setTextColor(resources.getColor(R.color.violet))
                         } else {
-                            text_pm.setTextColor(R.color.super_red)
+                            text_pm.setTextColor(resources.getColor(R.color.super_red))
                             text_pm_details.text = "อันตราย"
-                            text_pm_details.setTextColor(R.color.super_red)
+                            text_pm_details.setTextColor(resources.getColor(R.color.super_red))
                         }
                     }catch (e:Exception) {
 

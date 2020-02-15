@@ -25,6 +25,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.facebook.shimmer.ShimmerFrameLayout
+import com.getkeepsafe.taptargetview.TapTarget
+import com.getkeepsafe.taptargetview.TapTargetView
 import me.duckfollow.ozone.MapsActivity
 import me.duckfollow.ozone.R
 import me.duckfollow.ozone.adapter.AqiListAdapter
@@ -161,6 +163,23 @@ class MainDetailsActivity : AppCompatActivity() {
         list_iaqi.setScrollingTouchSlop(RecyclerView.TOUCH_SLOP_PAGING)
         val snapHelper = LinearSnapHelper() // Or PagerSnapHelper
         snapHelper.attachToRecyclerView(list_iaqi)
+    }
+
+    fun showShared(){
+        TapTargetView.showFor(this,
+            TapTarget.forView(btn_shared,"ปุ่มแชร์", "คุณสามารถแชร์ไปสตอรี่ของคุณได้").cancelable(false),
+            object : TapTargetView.Listener() {
+                override fun onTargetClick(view: TapTargetView) {
+                    super.onTargetClick(view)
+                    UserProfile(this@MainDetailsActivity).setMainDetailsTutorial(false.toString())
+                    if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(this@MainDetailsActivity,
+                            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), STORAGE_PERMISSION)
+                    }else {
+                        shared()
+                    }
+                }
+            })
     }
 
     fun img_shared(): Bitmap {
@@ -320,6 +339,9 @@ view.getMeasuredHeight(),
                     shimmer_view_container.stopShimmer()
                     shimmer_view_container.visibility = View.GONE
                     scroll_view.visibility = View.VISIBLE
+                    if(UserProfile(this@MainDetailsActivity).getMainDetailsTutorial().toBoolean()){
+                        showShared()
+                    }
                 },1000)
             }catch (e:Exception){
 

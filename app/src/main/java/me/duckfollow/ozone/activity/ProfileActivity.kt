@@ -21,6 +21,8 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import com.getkeepsafe.taptargetview.TapTarget
+import com.getkeepsafe.taptargetview.TapTargetView
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
@@ -174,6 +176,9 @@ class ProfileActivity : AppCompatActivity() {
 
         myRefLocation.addValueEventListener(locationListener)
 
+        if(UserProfile(this).getProfileTutorial().toBoolean()){
+            showProfile()
+        }
     }
 
     private fun initView(){
@@ -184,6 +189,39 @@ class ProfileActivity : AppCompatActivity() {
         qr_code_id = findViewById(R.id.qr_code_id)
         text_id = findViewById(R.id.text_id)
         list_family = findViewById(R.id.list_family)
+    }
+
+    fun showProfile(){
+        TapTargetView.showFor(this,
+            TapTarget.forView(img_profile,"รูปโปรไฟล์", "คุณสามารถเปลี่ยนรูปโปรไฟล์ของคุณได้").cancelable(false),
+            object : TapTargetView.Listener() {
+                override fun onTargetClick(view: TapTargetView) {
+                    super.onTargetClick(view)
+                    showImgQRCode()
+                }
+            })
+    }
+
+    fun showImgQRCode(){
+        TapTargetView.showFor(this,
+            TapTarget.forView(qr_code_id,"รหัส QR Code ของคุณ", "แชร์รหัส QR Code ให้เพื่อนของคุณแสกน").cancelable(false),
+            object : TapTargetView.Listener() {
+                override fun onTargetClick(view: TapTargetView) {
+                    super.onTargetClick(view)
+                    showScan()
+                }
+            })
+    }
+
+    fun showScan(){
+        TapTargetView.showFor(this,
+            TapTarget.forView(btn_qr_scan,"แสกน QR Code", "คุณสามารถแสกนเพื่อเพิ่มเพื่อนได้").cancelable(false),
+            object : TapTargetView.Listener() {
+                override fun onTargetClick(view: TapTargetView) {
+                    super.onTargetClick(view)
+                    UserProfile(this@ProfileActivity).setProfileTutorial(false.toString())
+                }
+            })
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
