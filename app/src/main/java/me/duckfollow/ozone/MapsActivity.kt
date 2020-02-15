@@ -6,6 +6,7 @@ import android.content.res.Resources
 import android.graphics.*
 import android.graphics.drawable.BitmapDrawable
 import android.location.Location
+import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Handler
@@ -125,7 +126,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         myRefUser = database.child("location/"+android_id+"/")
         myRefLocation = database.child("user/"+android_id+"/subscribe/")
         myRefaddLocation = database.child("location/")
-
 
 
     }
@@ -437,6 +437,47 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
         myRefUser.updateChildren(map)
     }
 
+    fun showReview(){
+        Handler().postDelayed(Runnable {
+            review()
+        },1000)
+        if (UserProfile(this).getCountReview() == "3") {
+//            Handler().postDelayed(Runnable {
+//                review()
+//            },1000)
+        }else {
+            val count = UserProfile(this).getCountReview().toInt()+1
+            UserProfile(this).setCountReview((count.toString()))
+        }
+    }
+
+    fun review() {
+        val mView = layoutInflater.inflate(R.layout.layout_review, null)
+        val bottomSheetDialogLoading = BottomSheetDialog(this, R.style.BottomSheetDialog)
+        bottomSheetDialogLoading.setContentView(mView)
+        bottomSheetDialogLoading.setCancelable(false)
+
+        val bottomSheet = bottomSheetDialogLoading.findViewById<View>(R.id.design_bottom_sheet)
+        val behavior = BottomSheetBehavior.from(bottomSheet)
+        behavior.peekHeight = Resources.getSystem().getDisplayMetrics().heightPixels* Resources.getSystem().displayMetrics.density.toInt()
+
+        val btn_cancel = mView.findViewById<Button>(R.id.btn_cancel)
+        btn_cancel.setOnClickListener {
+            bottomSheetDialogLoading.cancel()
+            UserProfile(this).setCountReview("0")
+        }
+
+        val btn_review = mView.findViewById<Button>(R.id.btn_review)
+        btn_review.setOnClickListener {
+            val uri = Uri.parse("https://play.google.com/store/apps/details?id=me.duckfollow.ozone"); // missing 'http://' will cause crashed
+            val intent = Intent(Intent.ACTION_VIEW, uri);
+            startActivity(intent);
+            UserProfile(this).setCountReview("99")
+            bottomSheetDialogLoading.cancel()
+        }
+        bottomSheetDialogLoading.show()
+    }
+
     @SuppressLint("StaticFieldLeak")
     inner class TaskDataLocation(val lat:Double,val lon:Double):AsyncTask<String,String,String>(){
         val loading = ViewLoading(this@MapsActivity).create()
@@ -513,6 +554,7 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
                     if(UserProfile(this@MapsActivity).getMapTutorial().toBoolean()){
                         showProfile()
                     }
+                    showReview()
                 }, 3500)
             }catch (e:Exception){
                 errorCodeCheck("dataError")

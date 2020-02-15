@@ -52,6 +52,14 @@ class UserProfile {
         return User.getString("ProfileTutorial","true")
     }
 
+    fun setCountReview(count: String){
+        this.setUserData("CountReview", count)
+    }
+
+    fun getCountReview():String {
+        return User.getString("CountReview","0")
+    }
+
     fun setUserData(key:String,value:String){
         editor = User.edit()
         editor.putString(key, value)
