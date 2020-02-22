@@ -17,6 +17,23 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
+            <TextView
+                android:id="@+id/text_head"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="ให้คะแนนแอพพลิเคชัน"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="10dp"
+                android:textSize="18dp"
+                android:textColor="@android:color/black"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_below="@+id/text_head"
+                android:background="#E4E5E6"
+                android:layout_margin="5dp"/>
+
             <LinearLayout
                 android:id="@+id/view_btn"
                 android:orientation="horizontal"

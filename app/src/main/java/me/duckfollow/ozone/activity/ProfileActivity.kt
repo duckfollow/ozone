@@ -34,6 +34,7 @@ import com.google.zxing.common.BitMatrix
 import me.duckfollow.ozone.R
 import me.duckfollow.ozone.adapter.FamilyAdapter
 import me.duckfollow.ozone.model.FamilyModel
+import me.duckfollow.ozone.service.MyNotification
 import me.duckfollow.ozone.simple.BaseActivity
 import me.duckfollow.ozone.user.UserProfile
 import me.duckfollow.ozone.utils.ConvertImagetoBase64

@@ -1,6 +1,10 @@
 package me.duckfollow.ozone
 
 import android.annotation.SuppressLint
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
 import android.graphics.*
@@ -8,6 +12,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.location.Location
 import android.net.Uri
 import android.os.AsyncTask
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.provider.Settings
@@ -19,6 +24,9 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityOptionsCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.getkeepsafe.taptargetview.TapTarget
@@ -53,6 +61,7 @@ import me.duckfollow.ozone.model.AqiModel
 import me.duckfollow.ozone.model.ListModel
 import me.duckfollow.ozone.model.WaqiInfoGeo
 import me.duckfollow.ozone.model.WaqiLocation
+import me.duckfollow.ozone.service.MyNotification
 import me.duckfollow.ozone.user.UserProfile
 import me.duckfollow.ozone.util.ApiConnection
 import me.duckfollow.ozone.utils.ConvertImagetoBase64
@@ -61,6 +70,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 import kotlin.random.Random
 
 
@@ -87,6 +97,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     lateinit var myRefUser: DatabaseReference
     lateinit var myRefLocation: DatabaseReference
     lateinit var myRefaddLocation: DatabaseReference
+    lateinit var myRefNotification: DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -125,10 +136,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         val database = FirebaseDatabase.getInstance().reference
         myRefUser = database.child("location/"+android_id+"/")
         myRefLocation = database.child("user/"+android_id+"/subscribe/")
+        myRefNotification = database.child("user/"+android_id+"/notification/")
         myRefaddLocation = database.child("location/")
 
+        try {
+            val serviceIntent = Intent(this, MyNotification::class.java);
+            serviceIntent.putExtra("inputExtra", "Foreground Service Example in Android");
+            ContextCompat.startForegroundService(this, serviceIntent);
+        }catch (e:Exception){
 
+        }
     }
+
 
     fun showProfile() {
         TapTargetView.showFor(this,
@@ -435,16 +454,14 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
         map.put("latitude",p0.latitude)
         map.put("longitude",p0.longitude)
         myRefUser.updateChildren(map)
+
     }
 
     fun showReview(){
-        Handler().postDelayed(Runnable {
-            review()
-        },1000)
-        if (UserProfile(this).getCountReview() == "3") {
-//            Handler().postDelayed(Runnable {
-//                review()
-//            },1000)
+        if (UserProfile(this).getCountReview() == "5") {
+            Handler().postDelayed(Runnable {
+                review()
+            },1000)
         }else {
             val count = UserProfile(this).getCountReview().toInt()+1
             UserProfile(this).setCountReview((count.toString()))
@@ -754,6 +771,12 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
                     }catch (e:Exception) {
 
                     }
+
+                    val data_notification = HashMap<String,Any>()
+                    data_notification.put("station",name)
+                    data_notification.put("text",v)
+
+                    myRefNotification.updateChildren(data_notification)
 
                 }catch (e:Exception){
 

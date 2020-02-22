@@ -178,9 +178,18 @@
                     android:textAlignment="center"
                     android:textColor="#C4C2C2"/>
 
+                <TextView
+                    android:id="@+id/text_pm_details"
+                    android:layout_below="@+id/text_pm_unit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="20dp"
+                    android:textAlignment="center"
+                    android:textColor="#C4C2C2"/>
+
                 <View
                     android:id="@+id/view_line"
-                    android:layout_below="@+id/text_pm_unit"
+                    android:layout_below="@+id/text_pm_details"
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:layout_marginBottom="10dp"
