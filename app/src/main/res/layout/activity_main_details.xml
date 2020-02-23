@@ -54,11 +54,42 @@
             android:text="TextView"
             android:textSize="30dp"
             android:layout_marginTop="10dp"
-            android:layout_marginLeft="10dp"/>
+            android:layout_marginLeft="10dp"
+            android:textStyle="bold"/>
+
+        <me.duckfollow.ozone.view.SquareLinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="20dp"
+            android:layout_marginLeft="100dp"
+            android:layout_marginRight="100dp">
+
+            <me.duckfollow.ozone.view.ArcProgress
+                android:id="@+id/progress"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:arc_stroke_width="20dp"
+                app:arc_unfinished_color="#6DE7E6E6"
+                app:arc_progress="30"
+                app:arc_text="223"
+                app:arc_bottom_text_size="20dp"
+                app:arc_bottom_text="US AQI"/>
+
+        </me.duckfollow.ozone.view.SquareLinearLayout>
+
+        <TextView
+            android:id="@+id/text_details"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:layout_margin="10dp"
+            android:textSize="30dp"
+            android:textStyle="bold"/>
 
         <androidx.cardview.widget.CardView
+            android:visibility="gone"
             android:layout_width="match_parent"
-            android:layout_height="100dp"
+            android:layout_height="wrap_content"
             android:layout_margin="10dp"
             app:cardCornerRadius="10dp">
             <RelativeLayout

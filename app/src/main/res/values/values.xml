@@ -106,4 +106,22 @@
 
     <integer name="ucrop_progress_loading_anim_time">1500</integer>
 
+
+    <declare-styleable name="ArcProgress">
+        <attr format="integer" name="arc_progress"/>
+        <attr format="float" name="arc_angle"/>
+        <attr format="dimension" name="arc_stroke_width"/>
+        <attr format="integer" name="arc_max"/>
+        <attr format="color" name="arc_unfinished_color"/>
+        <attr format="color" name="arc_finished_color"/>
+        <attr format="dimension" name="arc_text_size"/>
+        <attr format="color" name="arc_text_color"/>
+        <attr format="string" name="arc_suffix_text"/>
+        <attr format="dimension" name="arc_suffix_text_size"/>
+        <attr format="dimension" name="arc_suffix_text_padding"/>
+        <attr format="string" name="arc_bottom_text"/>
+        <attr format="string" name="arc_text"/>
+        <attr format="dimension" name="arc_bottom_text_size"/>
+    </declare-styleable>
+
 </resources>

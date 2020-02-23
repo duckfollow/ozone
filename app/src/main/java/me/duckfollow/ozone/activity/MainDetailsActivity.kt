@@ -34,6 +34,7 @@ import me.duckfollow.ozone.model.AqiModel
 import me.duckfollow.ozone.user.UserProfile
 import me.duckfollow.ozone.util.ApiConnection
 import me.duckfollow.ozone.utils.ConvertImagetoBase64
+import me.duckfollow.ozone.view.ArcProgress
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -61,9 +62,10 @@ class MainDetailsActivity : AppCompatActivity() {
     lateinit var text_pm_shared:TextView
     lateinit var img_profile_share:ImageView
     lateinit var text_pm_details:TextView
+    lateinit var progress:ArcProgress
+    lateinit var text_details:TextView
 
     private val STORAGE_PERMISSION = 3
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -156,6 +158,8 @@ class MainDetailsActivity : AppCompatActivity() {
         text_pm_shared = findViewById(R.id.text_pm_shared)
         img_profile_share = findViewById(R.id.img_profile_share)
         text_pm_details = findViewById(R.id.text_pm_details)
+        progress = findViewById(R.id.progress)
+        text_details = findViewById(R.id.text_details)
 
         list_iaqi.layoutManager = LinearLayoutManager(this)
         list_iaqi.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
@@ -296,38 +300,62 @@ view.getMeasuredHeight(),
                     data.add(AqiModel("pm25",v))
                     txtViewIaqi.text = v
                     text_pm_shared.text = v
+                    progress.textShow = v
                     try {
                         val aqi = v.toInt()
+                        progress.progress = if (aqi > 500) {
+                            100
+                        }else {
+                            aqi / 5
+                        }
                         if (aqi <= 50) {
                             txt_view_quality.text = getString(R.string.txt_good)
                             text_pm_shared.setTextColor(getResources().getColor(R.color.colorGreen))
                             text_pm_details.setTextColor(getResources().getColor(R.color.colorGreen))
                             text_pm_details.text = "ดี"
+
+                            text_details.text = "ดี"
+                            text_details.setTextColor(getResources().getColor(R.color.colorGreen))
                         } else if (aqi <= 100) {
                             txt_view_quality.text = getString(R.string.txt_moderate)
                             text_pm_shared.setTextColor(getResources().getColor(R.color.colorYellow))
                             text_pm_details.setTextColor(getResources().getColor(R.color.colorYellow))
                             text_pm_details.text = "ปานกลาง"
+
+                            text_details.text = "ปานกลาง"
+                            text_details.setTextColor(getResources().getColor(R.color.colorYellow))
                         } else if (aqi <= 150) {
                             txt_view_quality.text = getString(R.string.txt_unhealthy_for_sensitive_groups)
                             text_pm_shared.setTextColor(getResources().getColor(R.color.colorOrange))
                             text_pm_details.setTextColor(getResources().getColor(R.color.colorOrange))
                             text_pm_details.text = "ไม่ดีต่อสุขภาพผู้ป่วยภูมิแพ้"
+
+                            text_details.text = "ไม่ดีต่อสุขภาพผู้ป่วยภูมิแพ้"
+                            text_details.setTextColor(getResources().getColor(R.color.colorOrange))
                         } else if (aqi <= 200) {
                             txt_view_quality.text = getString(R.string.txt_unhealthy)
                             text_pm_shared.setTextColor(getResources().getColor(R.color.colorPink))
                             text_pm_details.setTextColor(getResources().getColor(R.color.colorPink))
                             text_pm_details.text = "ไม่ดีต่อสุขภาพ"
+
+                            text_details.text = "ไม่ดีต่อสุขภาพ"
+                            text_details.setTextColor(getResources().getColor(R.color.colorPink))
                         } else if (aqi <= 300) {
                             txt_view_quality.text = getString(R.string.txt_very_unhealthy)
                             text_pm_shared.setTextColor(getResources().getColor(R.color.colorViolet))
                             text_pm_details.setTextColor(getResources().getColor(R.color.colorViolet))
                             text_pm_details.text = "ไม่ดีต่อสุขภาพมาก"
+
+                            text_details.text = "ไม่ดีต่อสุขภาพมาก"
+                            text_details.setTextColor(getResources().getColor(R.color.colorViolet))
                         } else {
                             txt_view_quality.text = getString(R.string.txt_hazardous)
                             text_pm_shared.setTextColor(getResources().getColor(R.color.colorRed))
                             text_pm_details.setTextColor(getResources().getColor(R.color.colorRed))
                             text_pm_details.text = "อันตราย"
+
+                            text_details.text = "อันตราย"
+                            text_details.setTextColor(getResources().getColor(R.color.colorRed))
                         }
                     }catch (e:Exception){
 
