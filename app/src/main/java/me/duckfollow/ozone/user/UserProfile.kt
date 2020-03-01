@@ -60,6 +60,14 @@ class UserProfile {
         return User.getString("CountReview","0")
     }
 
+    fun setExpandViewCorona(isExpend:String) {
+        this.setUserData("ExpandViewCorona", isExpend)
+    }
+
+    fun getExpandViewCorona():String {
+        return User.getString("ExpandViewCorona","true")
+    }
+
     fun setUserData(key:String,value:String){
         editor = User.edit()
         editor.putString(key, value)

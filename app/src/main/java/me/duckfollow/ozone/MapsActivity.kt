@@ -92,6 +92,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     lateinit var btn_profile: ImageButton
     lateinit var text_pm_details:TextView
     lateinit var btn_menu:Button
+    lateinit var txt_confirmed:TextView
+    lateinit var txt_recovered:TextView
+    lateinit var txt_deaths:TextView
+    lateinit var btn_view_corona:ImageButton
+    lateinit var view_corona:LinearLayout
     var dataList: ArrayList<ListModel> = ArrayList()
 
     lateinit var myRefUser: DatabaseReference
@@ -118,6 +123,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         Log.d("app_url",url)
         TaskDataLocation(mLat,mLong).execute(url)
 
+        TaskDataCoronaVirus().execute("https://coronavirus-tracker-api.herokuapp.com/confirmed")
+        TaskDataCoronaVirusDeaths().execute("https://coronavirus-tracker-api.herokuapp.com/deaths")
+        TaskDataCoronaVirusRecovers().execute("https://coronavirus-tracker-api.herokuapp.com/recovered")
         btn_menu.setOnClickListener {
             Menu()
         }
@@ -145,6 +153,26 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
             ContextCompat.startForegroundService(this, serviceIntent);
         }catch (e:Exception){
 
+        }
+
+        if (UserProfile(this).getExpandViewCorona().toBoolean()) {
+            view_corona.visibility = View.VISIBLE
+            btn_view_corona.setImageResource(R.drawable.ic_up_arrow)
+        }else {
+            view_corona.visibility = View.GONE
+            btn_view_corona.setImageResource(R.drawable.ic_down_arrow)
+        }
+
+        btn_view_corona.setOnClickListener {
+            if (view_corona.visibility == View.VISIBLE){
+                view_corona.visibility = View.GONE
+                btn_view_corona.setImageResource(R.drawable.ic_down_arrow)
+                UserProfile(this).setExpandViewCorona(false.toString())
+            }else {
+                view_corona.visibility = View.VISIBLE
+                btn_view_corona.setImageResource(R.drawable.ic_up_arrow)
+                UserProfile(this).setExpandViewCorona(true.toString())
+            }
         }
     }
 
@@ -205,6 +233,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         btn_profile = findViewById(R.id.btn_profile)
         text_pm_details = findViewById(R.id.text_pm_details)
         btn_menu = findViewById(R.id.btn_menu)
+        txt_confirmed = findViewById(R.id.txt_confirmed)
+        txt_recovered = findViewById(R.id.txt_recovered)
+        txt_deaths = findViewById(R.id.txt_deaths)
+        btn_view_corona = findViewById(R.id.btn_view_corona)
+        view_corona = findViewById(R.id.view_corona)
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -292,6 +325,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         val i = Intent(this,MainDetailsActivity::class.java)
         i.putExtra("lat",p0!!.position.latitude.toString())
         i.putExtra("lon",p0.position.longitude.toString())
+        i.putExtra("corona",p0.tag.toString())
         startActivity(i)
         return false
     }
@@ -340,6 +374,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         marker_user.zIndex = 1F
         val url = "https://api.waqi.info/map/bounds/?latlng="/*+mLat+","+mLong+","*/+(mLat+1)+","+(mLong+1)+","+(mLat-1)+","+(mLong-1)+"&token=fe5f8a6aa99f6bfb397762a0cade98a6d78795a6"
         TaskDataLocation(mLat,mLong).execute(url)
+        TaskDataCoronaVirus().execute("https://coronavirus-tracker-api.herokuapp.com/confirmed")
     }
 
 fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
@@ -667,6 +702,7 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
             val url =
                 "https://api.waqi.info/map/bounds/?latlng=" /*+ p0.position.latitude + "," + p0.position.longitude + "," */+ (p0.position.latitude + 1) + "," + (p0.position.longitude + 1)+ "," + (p0.position.latitude - 1) + "," + (p0.position.longitude - 1) + "&token=fe5f8a6aa99f6bfb397762a0cade98a6d78795a6"
             TaskDataLocation(mLat,mLong).execute(url)
+        TaskDataCoronaVirus().execute("https://coronavirus-tracker-api.herokuapp.com/confirmed")
     }
 
     override fun onMarkerDragStart(p0: Marker?) {
@@ -702,6 +738,7 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
         marker_user.zIndex = 1F
         val url = "https://api.waqi.info/map/bounds/?latlng="/*+p0.latitude+","+p0.longitude+","*/+(p0.latitude+1)+","+(p0.longitude+1)+","+(p0.latitude-1)+","+(p0.longitude-1)+"&token=fe5f8a6aa99f6bfb397762a0cade98a6d78795a6"
         TaskDataLocation(mLat,mLong).execute(url)
+        TaskDataCoronaVirus().execute("https://coronavirus-tracker-api.herokuapp.com/confirmed")
     }
 
     fun user_marker():Bitmap{
@@ -784,6 +821,83 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
 
             }catch (e:Exception){
                 //Toast.makeText(this@MapsActivity,e.toString(),Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    inner class TaskDataCoronaVirus: AsyncTask<String,String,String>() {
+        override fun doInBackground(vararg params: String?): String? {
+            return ApiConnection().getData(params[0].toString())
+        }
+
+        override fun onPostExecute(result: String?) {
+            super.onPostExecute(result)
+            try {
+                val json = JSONObject(result)
+                val latest_data = json.getString("latest")
+                val location = json.getJSONArray("locations")
+                for(i in 0..location.length()-1) {
+                    val jsonData = JSONObject(location[i].toString())
+                    val str = jsonData.getString("coordinates")
+                    val coordinates = JSONObject(str)
+                    val lat = coordinates.getDouble("lat")
+                    val long = coordinates.getDouble("long")
+                    val country = jsonData.getString("country")
+                    val latest = jsonData.getString("latest")
+                    val province = jsonData.getString("province")
+                    Log.d("province",province)
+                    Log.d("lat_corona",lat.toString())
+
+                    val marker = mMap.addMarker(
+                        MarkerOptions()
+                            .position(
+                                LatLng(
+                                    lat,
+                                    long
+                                )
+                            )
+                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.virus))
+                    )
+                    marker.tag = i.toString()+"_corona"
+                    marker.zIndex = 1F
+                }
+                txt_confirmed.text = latest_data
+            }catch (e:java.lang.Exception){
+                Log.d("err_corona",e.toString())
+            }
+        }
+    }
+
+    inner class TaskDataCoronaVirusDeaths: AsyncTask<String,String,String>() {
+        override fun doInBackground(vararg params: String?): String? {
+            return ApiConnection().getData(params[0].toString())
+        }
+
+        override fun onPostExecute(result: String?) {
+            super.onPostExecute(result)
+            try {
+                val json = JSONObject(result)
+                val latest_data = json.getString("latest")
+                txt_deaths.text = latest_data
+            }catch (e:java.lang.Exception){
+                Log.d("err_corona",e.toString())
+            }
+        }
+    }
+
+    inner class TaskDataCoronaVirusRecovers: AsyncTask<String,String,String>() {
+        override fun doInBackground(vararg params: String?): String? {
+            return ApiConnection().getData(params[0].toString())
+        }
+
+        override fun onPostExecute(result: String?) {
+            super.onPostExecute(result)
+            try {
+                val json = JSONObject(result)
+                val latest_data = json.getString("latest")
+                txt_recovered.text = latest_data
+            }catch (e:java.lang.Exception){
+                Log.d("err_corona",e.toString())
             }
         }
     }
