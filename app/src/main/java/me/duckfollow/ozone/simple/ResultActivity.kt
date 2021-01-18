@@ -61,7 +61,7 @@ class ResultActivity : BaseActivity() {
         }
         val options = BitmapFactory.Options()
         options.inJustDecodeBounds = true
-       val b = BitmapFactory.decodeFile(File(intent.data.path).absolutePath, options)
+       val b = BitmapFactory.decodeFile(File(intent.data!!.path).absolutePath, options)
 
         setSupportActionBar(findViewById(R.id.toolbar) as Toolbar)
         val actionBar = supportActionBar
@@ -123,7 +123,7 @@ class ResultActivity : BaseActivity() {
             val imageUri = intent.data
             if (imageUri != null && imageUri.scheme == "file") {
                 try {
-                    copyFileToDownloads(intent.data)
+                    copyFileToDownloads(intent.data!!)
                 } catch (e: Exception) {
                     Toast.makeText(this@ResultActivity, e.message, Toast.LENGTH_SHORT).show()
                     Log.e(TAG, imageUri.toString(), e)

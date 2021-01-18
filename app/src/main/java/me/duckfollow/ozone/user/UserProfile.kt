@@ -17,7 +17,7 @@ class UserProfile {
     }
 
     fun getUserId():String{
-        return User.getString("userId","")
+        return User.getString("userId","")!!
     }
 
     fun setImageBase64(base64:String){
@@ -25,7 +25,7 @@ class UserProfile {
     }
 
     fun getImageBase64():String{
-        return User.getString("base64","")
+        return User.getString("base64","")!!
     }
 
     fun setMapTutorial(isShow:String){
@@ -33,7 +33,7 @@ class UserProfile {
     }
 
     fun getMapTutorial():String {
-        return User.getString("MapTutorial","true")
+        return User.getString("MapTutorial","true")!!
     }
 
     fun setMainDetailsTutorial(isShow:String){
@@ -41,7 +41,7 @@ class UserProfile {
     }
 
     fun getMainDetailsTutorial():String {
-        return User.getString("MainDetailsTutorial","true")
+        return User.getString("MainDetailsTutorial","true")!!
     }
 
     fun setProfileTutorial(isShow:String){
@@ -49,7 +49,7 @@ class UserProfile {
     }
 
     fun getProfileTutorial():String {
-        return User.getString("ProfileTutorial","true")
+        return User.getString("ProfileTutorial","true")!!
     }
 
     fun setCountReview(count: String){
@@ -57,7 +57,7 @@ class UserProfile {
     }
 
     fun getCountReview():String {
-        return User.getString("CountReview","0")
+        return User.getString("CountReview","0")!!
     }
 
     fun setExpandViewCorona(isExpend:String) {
@@ -65,7 +65,7 @@ class UserProfile {
     }
 
     fun getExpandViewCorona():String {
-        return User.getString("ExpandViewCorona","true")
+        return User.getString("ExpandViewCorona","true")!!
     }
 
     fun setUserData(key:String,value:String){
@@ -75,6 +75,6 @@ class UserProfile {
     }
 
     fun getUserData(key:String):String{
-        return User.getString(key,"")
+        return User.getString(key,"")!!
     }
 }

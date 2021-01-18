@@ -217,7 +217,7 @@ class UCropFragment : Fragment() {
         val compressionFormatName = bundle.getString(UCrop.Options.EXTRA_COMPRESSION_FORMAT_NAME)
         var compressFormat: Bitmap.CompressFormat? = null
         if (!TextUtils.isEmpty(compressionFormatName)) {
-            compressFormat = Bitmap.CompressFormat.valueOf(compressionFormatName)
+            compressFormat = Bitmap.CompressFormat.valueOf(compressionFormatName!!)
         }
         mCompressFormat = compressFormat ?: DEFAULT_COMPRESS_FORMAT
 

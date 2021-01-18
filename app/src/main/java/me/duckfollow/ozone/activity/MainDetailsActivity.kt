@@ -60,18 +60,10 @@ class MainDetailsActivity : AppCompatActivity() {
     lateinit var txt_view_quality:TextView
     lateinit var btn_shared:Button
     private lateinit var myRootView:View
-    lateinit var root_view:RelativeLayout
-    lateinit var text_name_shared:TextView
-    lateinit var text_pm_shared:TextView
-    lateinit var img_profile_share:ImageView
-    lateinit var text_pm_details:TextView
+//    lateinit var text_pm_details:TextView
     lateinit var progress:ArcProgress
     lateinit var text_details:TextView
     lateinit var text_country:TextView
-    lateinit var txt_confirmed:TextView
-    lateinit var txt_deaths:TextView
-    lateinit var txt_recovered:TextView
-    lateinit var view_corona:LinearLayout
 
     private val STORAGE_PERMISSION = 3
 
@@ -81,27 +73,9 @@ class MainDetailsActivity : AppCompatActivity() {
         initView()
 
         val location_data = intent.extras
-        val url = "https://api.waqi.info/feed/geo:"+location_data.getString("lat")+";"+location_data.getString("lon")+"/?token=fe5f8a6aa99f6bfb397762a0cade98a6d78795a6"
+        val url = "https://api.waqi.info/feed/geo:"+ location_data!!.getString("lat")+";"+location_data.getString("lon")+"/?token=fe5f8a6aa99f6bfb397762a0cade98a6d78795a6"
         TaskData().execute(url)
         Log.d("data_res_url",url)
-
-        try {
-            val corona = location_data.getString("corona")
-            Log.d("corona",corona)
-            val ck = corona.split("_")
-
-            if (ck.size > 1) {
-                val index = ck[0].toInt()
-                TaskDataCoronaVirusConfirmed(index).execute("https://coronavirus-tracker-api.herokuapp.com/confirmed")
-                TaskDataCoronaVirusDeaths(index).execute("https://coronavirus-tracker-api.herokuapp.com/deaths")
-                TaskDataCoronaVirusRecovered(index).execute("https://coronavirus-tracker-api.herokuapp.com/recovered")
-                view_corona.visibility = View.VISIBLE
-            } else {
-                view_corona.visibility = View.GONE
-            }
-        }catch (e:Exception){
-
-        }
 
         btn_back.setOnClickListener {
             this.finish()
@@ -121,7 +95,7 @@ class MainDetailsActivity : AppCompatActivity() {
         val img_base64 = UserProfile(this).getImageBase64()
         if(img_base64 != "") {
             val b = ConvertImagetoBase64().base64ToBitmap(img_base64)
-            img_profile_share.setImageBitmap(getCroppedBitmap(b))
+//            img_profile_share.setImageBitmap(getCroppedBitmap(b))
         }
     }
 
@@ -150,15 +124,19 @@ class MainDetailsActivity : AppCompatActivity() {
     }
 
     private fun shared(){
-        val b = getImageUri(getBitmapFromView(root_view))
-        val sendIntent: Intent = Intent().apply {
-            action = Intent.ACTION_SEND
-            putExtra(Intent.EXTRA_STREAM, b)
-            type = "image/*"
-        }
-
-        val shareIntent = Intent.createChooser(sendIntent, "OzoneNotIncluded_Share")
-        startActivity(shareIntent)
+//        val b = getImageUri(getBitmapFromView(root_view))
+//        val sendIntent: Intent = Intent().apply {
+//            action = Intent.ACTION_SEND
+//            putExtra(Intent.EXTRA_STREAM, b)
+//            type = "image/*"
+//        }
+//
+//        val shareIntent = Intent.createChooser(sendIntent, "OzoneNotIncluded_Share")
+//        startActivity(shareIntent)
+        val i_shared = Intent(this,SharedActivity::class.java)
+        i_shared.putExtra("aqi",txtViewIaqi.text)
+        i_shared.putExtra("city",textViewCityName.text)
+        startActivity(i_shared)
     }
 
     fun getImageUri(inImage:Bitmap): Uri {
@@ -179,19 +157,10 @@ class MainDetailsActivity : AppCompatActivity() {
         scroll_view.visibility = View.GONE
         txt_view_quality = findViewById(R.id.txt_view_quality)
         btn_shared = findViewById(R.id.btn_shared)
-        root_view = findViewById(R.id.root_view)
-        text_name_shared = findViewById(R.id.text_name_shared)
-        text_pm_shared = findViewById(R.id.text_pm_shared)
-        img_profile_share = findViewById(R.id.img_profile_share)
-        text_pm_details = findViewById(R.id.text_pm_details)
+//        img_profile_share = findViewById(R.id.img_profile_share)
+//        text_pm_details = findViewById(R.id.text_pm_details)
         progress = findViewById(R.id.progress)
         text_details = findViewById(R.id.text_details)
-        text_country = findViewById(R.id.text_country)
-        txt_confirmed = findViewById(R.id.txt_confirmed)
-        txt_deaths = findViewById(R.id.txt_deaths)
-        txt_recovered = findViewById(R.id.txt_recovered)
-        view_corona = findViewById(R.id.view_corona)
-        view_corona.visibility = View.GONE
 
         list_iaqi.layoutManager = LinearLayoutManager(this)
         list_iaqi.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
@@ -331,7 +300,7 @@ view.getMeasuredHeight(),
                     val v = pm25.getString("v")
                     data.add(AqiModel("pm25",v))
                     txtViewIaqi.text = v
-                    text_pm_shared.text = v
+//                    text_pm_shared.text = v
                     progress.textShow = v
                     try {
                         val aqi = v.toInt()
@@ -342,49 +311,49 @@ view.getMeasuredHeight(),
                         }
                         if (aqi <= 50) {
                             txt_view_quality.text = getString(R.string.txt_good)
-                            text_pm_shared.setTextColor(getResources().getColor(R.color.colorGreen))
-                            text_pm_details.setTextColor(getResources().getColor(R.color.colorGreen))
-                            text_pm_details.text = "ดี"
+//                            text_pm_shared.setTextColor(getResources().getColor(R.color.colorGreen))
+//                            text_pm_details.setTextColor(getResources().getColor(R.color.colorGreen))
+//                            text_pm_details.text = "ดี"
 
                             text_details.text = "ดี"
                             text_details.setTextColor(getResources().getColor(R.color.colorGreen))
                         } else if (aqi <= 100) {
                             txt_view_quality.text = getString(R.string.txt_moderate)
-                            text_pm_shared.setTextColor(getResources().getColor(R.color.colorYellow))
-                            text_pm_details.setTextColor(getResources().getColor(R.color.colorYellow))
-                            text_pm_details.text = "ปานกลาง"
+//                            text_pm_shared.setTextColor(getResources().getColor(R.color.colorYellow))
+//                            text_pm_details.setTextColor(getResources().getColor(R.color.colorYellow))
+//                            text_pm_details.text = "ปานกลาง"
 
                             text_details.text = "ปานกลาง"
                             text_details.setTextColor(getResources().getColor(R.color.colorYellow))
                         } else if (aqi <= 150) {
                             txt_view_quality.text = getString(R.string.txt_unhealthy_for_sensitive_groups)
-                            text_pm_shared.setTextColor(getResources().getColor(R.color.colorOrange))
-                            text_pm_details.setTextColor(getResources().getColor(R.color.colorOrange))
-                            text_pm_details.text = "ไม่ดีต่อสุขภาพผู้ป่วยภูมิแพ้"
+//                            text_pm_shared.setTextColor(getResources().getColor(R.color.colorOrange))
+//                            text_pm_details.setTextColor(getResources().getColor(R.color.colorOrange))
+//                            text_pm_details.text = "ไม่ดีต่อสุขภาพผู้ป่วยภูมิแพ้"
 
                             text_details.text = "ไม่ดีต่อสุขภาพผู้ป่วยภูมิแพ้"
                             text_details.setTextColor(getResources().getColor(R.color.colorOrange))
                         } else if (aqi <= 200) {
                             txt_view_quality.text = getString(R.string.txt_unhealthy)
-                            text_pm_shared.setTextColor(getResources().getColor(R.color.colorPink))
-                            text_pm_details.setTextColor(getResources().getColor(R.color.colorPink))
-                            text_pm_details.text = "ไม่ดีต่อสุขภาพ"
+//                            text_pm_shared.setTextColor(getResources().getColor(R.color.colorPink))
+//                            text_pm_details.setTextColor(getResources().getColor(R.color.colorPink))
+//                            text_pm_details.text = "ไม่ดีต่อสุขภาพ"
 
                             text_details.text = "ไม่ดีต่อสุขภาพ"
                             text_details.setTextColor(getResources().getColor(R.color.colorPink))
                         } else if (aqi <= 300) {
                             txt_view_quality.text = getString(R.string.txt_very_unhealthy)
-                            text_pm_shared.setTextColor(getResources().getColor(R.color.colorViolet))
-                            text_pm_details.setTextColor(getResources().getColor(R.color.colorViolet))
-                            text_pm_details.text = "ไม่ดีต่อสุขภาพมาก"
+//                            text_pm_shared.setTextColor(getResources().getColor(R.color.colorViolet))
+//                            text_pm_details.setTextColor(getResources().getColor(R.color.colorViolet))
+//                            text_pm_details.text = "ไม่ดีต่อสุขภาพมาก"
 
                             text_details.text = "ไม่ดีต่อสุขภาพมาก"
                             text_details.setTextColor(getResources().getColor(R.color.colorViolet))
                         } else {
                             txt_view_quality.text = getString(R.string.txt_hazardous)
-                            text_pm_shared.setTextColor(getResources().getColor(R.color.colorRed))
-                            text_pm_details.setTextColor(getResources().getColor(R.color.colorRed))
-                            text_pm_details.text = "อันตราย"
+//                            text_pm_shared.setTextColor(getResources().getColor(R.color.colorRed))
+//                            text_pm_details.setTextColor(getResources().getColor(R.color.colorRed))
+//                            text_pm_details.text = "อันตราย"
 
                             text_details.text = "อันตราย"
                             text_details.setTextColor(getResources().getColor(R.color.colorRed))
@@ -407,7 +376,8 @@ view.getMeasuredHeight(),
                 adapter.notifyDataSetChanged()
 
                 textViewCityName.text = name
-                text_name_shared.text = name
+//                text_name_shared.text = name
+
 
                 Handler().postDelayed(Runnable {
                     shimmer_view_container.stopShimmer()
@@ -501,95 +471,5 @@ view.getMeasuredHeight(),
 //            }
         }
     }
-
-    inner class TaskDataCoronaVirusConfirmed(val index:Int): AsyncTask<String,String,String>() {
-        override fun doInBackground(vararg params: String?): String? {
-            return ApiConnection().getData(params[0].toString())
-        }
-
-        override fun onPostExecute(result: String?) {
-            super.onPostExecute(result)
-            try {
-                val json = JSONObject(result)
-                val location = json.getJSONArray("locations")
-                val jsonData = JSONObject(location[index].toString())
-                val str = jsonData.getString("coordinates")
-                val coordinates = JSONObject(str)
-                val lat = coordinates.getDouble("lat")
-                val long = coordinates.getDouble("long")
-                val country = jsonData.getString("country")
-                val latest = jsonData.getString("latest")
-                val province = jsonData.getString("province")
-
-                text_country.text = country
-                txt_confirmed.text = latest
-                Log.d("province_details",province)
-                Log.d("lat_corona",lat.toString())
-            }catch (e:java.lang.Exception){
-                Log.d("err_corona",e.toString())
-            }
-        }
-
-    }
-
-    inner class TaskDataCoronaVirusDeaths(val index:Int): AsyncTask<String,String,String>() {
-        override fun doInBackground(vararg params: String?): String? {
-            return ApiConnection().getData(params[0].toString())
-        }
-
-        override fun onPostExecute(result: String?) {
-            super.onPostExecute(result)
-            try {
-                val json = JSONObject(result)
-                val location = json.getJSONArray("locations")
-                val jsonData = JSONObject(location[index].toString())
-                val str = jsonData.getString("coordinates")
-                val coordinates = JSONObject(str)
-                val lat = coordinates.getDouble("lat")
-                val long = coordinates.getDouble("long")
-                val country = jsonData.getString("country")
-                val latest = jsonData.getString("latest")
-                val province = jsonData.getString("province")
-
-                txt_deaths.text = latest
-                Log.d("province_details",province)
-                Log.d("lat_corona",lat.toString())
-            }catch (e:java.lang.Exception){
-                Log.d("err_corona",e.toString())
-            }
-        }
-
-    }
-
-    inner class TaskDataCoronaVirusRecovered(val index:Int): AsyncTask<String,String,String>() {
-        override fun doInBackground(vararg params: String?): String? {
-            return ApiConnection().getData(params[0].toString())
-        }
-
-        override fun onPostExecute(result: String?) {
-            super.onPostExecute(result)
-            try {
-                val json = JSONObject(result)
-                val location = json.getJSONArray("locations")
-                val jsonData = JSONObject(location[index].toString())
-                val str = jsonData.getString("coordinates")
-                val coordinates = JSONObject(str)
-                val lat = coordinates.getDouble("lat")
-                val long = coordinates.getDouble("long")
-                val country = jsonData.getString("country")
-                val latest = jsonData.getString("latest")
-                val province = jsonData.getString("province")
-
-                txt_recovered.text = latest
-                Log.d("province_details",province)
-                Log.d("lat_corona",lat.toString())
-            }catch (e:java.lang.Exception){
-                Log.d("err_corona",e.toString())
-            }
-        }
-
-    }
-
-
 
 }

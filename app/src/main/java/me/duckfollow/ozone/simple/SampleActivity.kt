@@ -424,12 +424,12 @@ class SampleActivity : BaseActivity(), UCropFragmentCallback {
     }
 
     fun setupFragment(uCrop: UCrop) {
-        fragment = uCrop.getFragment(uCrop.getIntent(this).getExtras())
+        fragment = uCrop.getFragment(uCrop.getIntent(this).getExtras()!!)
         supportFragmentManager.beginTransaction()
             .add(R.id.fragment_container, fragment!!, UCropFragment.TAG)
             .commitAllowingStateLoss()
 
-        setupViews(uCrop.getIntent(this).getExtras())
+        setupViews(uCrop.getIntent(this).getExtras()!!)
     }
 
     fun setupViews(args: Bundle) {

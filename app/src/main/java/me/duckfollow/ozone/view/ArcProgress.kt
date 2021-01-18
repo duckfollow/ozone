@@ -103,7 +103,7 @@ class ArcProgress @JvmOverloads constructor(context: Context, attrs: AttributeSe
                 attributes.getDimension(R.styleable.ArcProgress_arc_suffix_text_padding, default_suffix_padding)
         bottomTextSize = attributes.getDimension(R.styleable.ArcProgress_arc_bottom_text_size, default_bottom_text_size)
         bottomText = attributes.getString(R.styleable.ArcProgress_arc_bottom_text)
-        textShow = attributes.getString(R.styleable.ArcProgress_arc_text)
+        textShow = attributes.getString(R.styleable.ArcProgress_arc_text)!!
     }
 
     protected fun initPainters() {
@@ -343,7 +343,7 @@ class ArcProgress @JvmOverloads constructor(context: Context, attrs: AttributeSe
             finishedStrokeColor = state.getInt(INSTANCE_FINISHED_STROKE_COLOR)
             unfinishedStrokeColor = state.getInt(INSTANCE_UNFINISHED_STROKE_COLOR)
             suffixText = state.getString(INSTANCE_SUFFIX)
-            textShow = state.getString(INSTANCE_TEXT_SHOW)
+            textShow = state.getString(INSTANCE_TEXT_SHOW)!!
             initPainters()
             super.onRestoreInstanceState(state.getParcelable(INSTANCE_STATE))
             return
