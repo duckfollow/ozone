@@ -16,7 +16,7 @@ class ViewLoading (val context: Activity){
         bottomSheetDialogLoading.setCancelable(false)
 
         val bottomSheet = bottomSheetDialogLoading.findViewById<View>(R.id.design_bottom_sheet)
-        val behavior = BottomSheetBehavior.from(bottomSheet)
+        val behavior = BottomSheetBehavior.from(bottomSheet!!)
         behavior.peekHeight = Resources.getSystem().getDisplayMetrics().heightPixels* Resources.getSystem().displayMetrics.density.toInt()
 
         return bottomSheetDialogLoading

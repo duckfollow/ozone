@@ -46,6 +46,10 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.play.core.review.ReviewInfo
+import com.google.android.play.core.review.ReviewManager
+import com.google.android.play.core.review.ReviewManagerFactory
+import com.google.android.play.core.review.testing.FakeReviewManager
 import com.google.firebase.database.*
 import com.google.gson.Gson
 import com.google.zxing.BarcodeFormat
@@ -102,6 +106,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     lateinit var myRefaddLocation: DatabaseReference
     lateinit var myRefNotification: DatabaseReference
 
+    lateinit var manager: ReviewManager
+    var reviewInfo: ReviewInfo? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
@@ -150,6 +157,36 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
         }
 
+//        val manager = ReviewManagerFactory.create(applicationContext)
+//        val manager = FakeReviewManager(applicationContext)
+
+        initReviews()
+
+    }
+
+
+    // Call this method asap, for example in onCreate()
+    private fun initReviews() {
+//        manager = FakeReviewManager(applicationContext)
+        manager = ReviewManagerFactory.create(this)
+        manager.requestReviewFlow().addOnCompleteListener { request ->
+            if (request.isSuccessful) {
+                reviewInfo = request.result
+            } else {
+                // Log error
+            }
+        }
+    }
+
+    // Call this when you want to show the dialog
+    private fun askForReview() {
+        if (reviewInfo != null) {
+            manager.launchReviewFlow(this, reviewInfo!!).addOnFailureListener {
+                // Log error and continue with the flow
+            }.addOnCompleteListener { _ ->
+                // Log success and continue with the flow
+            }
+        }
     }
 
 
@@ -170,7 +207,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
             object : TapTargetView.Listener() {
                 override fun onTargetClick(view: TapTargetView) {
                     super.onTargetClick(view)
-                    showList()
+//                    showList()
+                    showViewMap()
                 }
             })
     }
@@ -466,7 +504,8 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
     fun showReview(){
         if (UserProfile(this).getCountReview() == "5") {
             Handler().postDelayed(Runnable {
-                review()
+//                review()
+                askForReview()
             },1000)
         }else {
             val count = UserProfile(this).getCountReview().toInt()+1
@@ -481,7 +520,7 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
         bottomSheetDialogLoading.setCancelable(false)
 
         val bottomSheet = bottomSheetDialogLoading.findViewById<View>(R.id.design_bottom_sheet)
-        val behavior = BottomSheetBehavior.from(bottomSheet)
+        val behavior = BottomSheetBehavior.from(bottomSheet!!)
         behavior.peekHeight = Resources.getSystem().getDisplayMetrics().heightPixels* Resources.getSystem().displayMetrics.density.toInt()
 
         val btn_cancel = mView.findViewById<Button>(R.id.btn_cancel)
