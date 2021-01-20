@@ -75,6 +75,8 @@ import me.duckfollow.ozone.utils.ConvertImagetoBase64
 import me.duckfollow.ozone.view.ViewLoading
 import org.json.JSONArray
 import org.json.JSONObject
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -105,6 +107,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     lateinit var myRefLocation: DatabaseReference
     lateinit var myRefaddLocation: DatabaseReference
     lateinit var myRefNotification: DatabaseReference
+
+    lateinit var myRefGraph: DatabaseReference
 
     lateinit var manager: ReviewManager
     var reviewInfo: ReviewInfo? = null
@@ -148,6 +152,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         myRefLocation = database.child("user/"+android_id+"/subscribe/")
         myRefNotification = database.child("user/"+android_id+"/notification/")
         myRefaddLocation = database.child("location/")
+
+        myRefGraph = database.child("graph/")
 
         try {
             val serviceIntent = Intent(this, MyNotification::class.java);
@@ -781,10 +787,13 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
                 val name = city.getString("name")
                 txt_station.text = name
 
+                var pm2Text = "0"
+
                 try {
                     val iaqi = JSONObject(data.getString("iaqi"))
                     val pm25 = JSONObject(iaqi.getString("pm25"))
                     val v = pm25.getString("v")
+                    pm2Text = v
                     text_pm.text = v
 
                     try {
@@ -823,6 +832,23 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
                     data_notification.put("text",v)
 
                     myRefNotification.updateChildren(data_notification)
+
+                    //HereThis
+                    val key_data = name.replace(",","").replace(" ","")
+
+                    val current = LocalDateTime.now()
+
+                    val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+                    val formatted = current.format(formatter)
+
+                    val formatter2 = DateTimeFormatter.ofPattern("MM/yyyy")
+                    val formatted2 = current.format(formatter2)
+
+                    val data_graph = java.util.HashMap<String, Any>()
+                    data_graph.put("date",formatted2)
+                    data_graph.put("text",pm2Text)
+
+                    myRefGraph.child(key_data+"/"+formatted+pm2Text).updateChildren(data_graph)
 
                 }catch (e:Exception){
 

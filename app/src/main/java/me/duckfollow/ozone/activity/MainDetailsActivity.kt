@@ -38,11 +38,14 @@ import com.google.android.gms.ads.initialization.OnInitializationCompleteListene
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.activity_main_details.*
 import me.duckfollow.ozone.MapsActivity
 import me.duckfollow.ozone.R
 import me.duckfollow.ozone.adapter.AqiListAdapter
+import me.duckfollow.ozone.adapter.GraphViewAdapter
 import me.duckfollow.ozone.model.AqiModel
+import me.duckfollow.ozone.model.GraphViewModel
 import me.duckfollow.ozone.user.UserProfile
 import me.duckfollow.ozone.util.ApiConnection
 import me.duckfollow.ozone.utils.ConvertImagetoBase64
@@ -54,6 +57,8 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -82,6 +87,10 @@ class MainDetailsActivity : AppCompatActivity() {
     val ADMOB_AD_UNIT_ID = "ca-app-pub-2582707291059118/4934366945"
     var currentNativeAd: UnifiedNativeAd? = null
 
+    lateinit var myRefGraph: DatabaseReference
+
+    var key_data = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main_details)
@@ -91,6 +100,9 @@ class MainDetailsActivity : AppCompatActivity() {
         val url = "https://api.waqi.info/feed/geo:"+ location_data!!.getString("lat")+";"+location_data.getString("lon")+"/?token=fe5f8a6aa99f6bfb397762a0cade98a6d78795a6"
         TaskData().execute(url)
         Log.d("data_res_url",url)
+
+        val database = FirebaseDatabase.getInstance().reference
+        myRefGraph = database.child("graph/")
 
         btn_back.setOnClickListener {
             this.finish()
@@ -115,33 +127,22 @@ class MainDetailsActivity : AppCompatActivity() {
 
         MobileAds.initialize(application, OnInitializationCompleteListener {
         })
-//        val adLoader = AdLoader.Builder(application, "ca-app-pub-2582707291059118/4934366945")
-//            .forUnifiedNativeAd { ad : UnifiedNativeAd ->
-//                // Show the ad.
-//                val colorDrawable = ColorDrawable(resources.getColor(R.color.white))
-//                val styles =
-//                    NativeTemplateStyle.Builder().withMainBackgroundColor(colorDrawable).build()
-//
-//                val template: TemplateView = findViewById(R.id.my_template)
-//                template.setStyles(styles)
-//                template.setNativeAd(ad)
-//            }
-//            .withAdListener(object : AdListener() {
-//                override fun onAdFailedToLoad(adError: LoadAdError) {
-//                    // Handle the failure by logging, altering the UI, and so on.
-//                    Log.d("errorTest",adError.message)
-//                }
-//            })
-//            .withNativeAdOptions(
-//                NativeAdOptions.Builder()
-//                // Methods in the NativeAdOptions.Builder class can be
-//                // used here to specify individual options settings.
-//                .build())
-//            .build()
-//
-//        val adr = AdRequest.Builder().build()
-//        adLoader.loadAd(adr)
+
         refreshAd()
+
+
+        //GraphView
+
+
+
+//        progress < 10 -> colorCustom = Color.parseColor("#4caf50")
+//        progress in 10..19 -> colorCustom = Color.parseColor("#ffeb3b")
+//        progress in 20..29 -> colorCustom = Color.parseColor("#ffc107")
+//        progress in 30..39 -> colorCustom = Color.parseColor("#f44336")
+//        progress in 40..59 -> colorCustom = Color.parseColor("#9c27b0")
+//        progress > 59 -> colorCustom = Color.parseColor("#bb1950")
+
+
     }
 
     fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
@@ -311,6 +312,8 @@ view.getMeasuredHeight(),
                 val name = city.getString("name")
                 val iaqi = JSONObject(dataJSON.getString("iaqi"))
 
+                var pm2Text = "0"
+
                 try {
                     val co = JSONObject(iaqi.getString("co"))
                     val v = co.getString("v")
@@ -343,6 +346,7 @@ view.getMeasuredHeight(),
                 try {
                     val pm25 = JSONObject(iaqi.getString("pm25"))
                     val v = pm25.getString("v")
+                    pm2Text = v
                     data.add(AqiModel("pm25",v))
                     txtViewIaqi.text = v
 //                    text_pm_shared.text = v
@@ -356,50 +360,26 @@ view.getMeasuredHeight(),
                         }
                         if (aqi <= 50) {
                             txt_view_quality.text = getString(R.string.txt_good)
-//                            text_pm_shared.setTextColor(getResources().getColor(R.color.colorGreen))
-//                            text_pm_details.setTextColor(getResources().getColor(R.color.colorGreen))
-//                            text_pm_details.text = "ดี"
-
                             text_details.text = "ดี"
                             text_details.setTextColor(getResources().getColor(R.color.colorGreen))
                         } else if (aqi <= 100) {
                             txt_view_quality.text = getString(R.string.txt_moderate)
-//                            text_pm_shared.setTextColor(getResources().getColor(R.color.colorYellow))
-//                            text_pm_details.setTextColor(getResources().getColor(R.color.colorYellow))
-//                            text_pm_details.text = "ปานกลาง"
-
                             text_details.text = "ปานกลาง"
                             text_details.setTextColor(getResources().getColor(R.color.colorYellow))
                         } else if (aqi <= 150) {
                             txt_view_quality.text = getString(R.string.txt_unhealthy_for_sensitive_groups)
-//                            text_pm_shared.setTextColor(getResources().getColor(R.color.colorOrange))
-//                            text_pm_details.setTextColor(getResources().getColor(R.color.colorOrange))
-//                            text_pm_details.text = "ไม่ดีต่อสุขภาพผู้ป่วยภูมิแพ้"
-
                             text_details.text = "ไม่ดีต่อสุขภาพผู้ป่วยภูมิแพ้"
                             text_details.setTextColor(getResources().getColor(R.color.colorOrange))
                         } else if (aqi <= 200) {
                             txt_view_quality.text = getString(R.string.txt_unhealthy)
-//                            text_pm_shared.setTextColor(getResources().getColor(R.color.colorPink))
-//                            text_pm_details.setTextColor(getResources().getColor(R.color.colorPink))
-//                            text_pm_details.text = "ไม่ดีต่อสุขภาพ"
-
                             text_details.text = "ไม่ดีต่อสุขภาพ"
                             text_details.setTextColor(getResources().getColor(R.color.colorPink))
                         } else if (aqi <= 300) {
                             txt_view_quality.text = getString(R.string.txt_very_unhealthy)
-//                            text_pm_shared.setTextColor(getResources().getColor(R.color.colorViolet))
-//                            text_pm_details.setTextColor(getResources().getColor(R.color.colorViolet))
-//                            text_pm_details.text = "ไม่ดีต่อสุขภาพมาก"
-
                             text_details.text = "ไม่ดีต่อสุขภาพมาก"
                             text_details.setTextColor(getResources().getColor(R.color.colorViolet))
                         } else {
                             txt_view_quality.text = getString(R.string.txt_hazardous)
-//                            text_pm_shared.setTextColor(getResources().getColor(R.color.colorRed))
-//                            text_pm_details.setTextColor(getResources().getColor(R.color.colorRed))
-//                            text_pm_details.text = "อันตราย"
-
                             text_details.text = "อันตราย"
                             text_details.setTextColor(getResources().getColor(R.color.colorRed))
                         }
@@ -409,6 +389,7 @@ view.getMeasuredHeight(),
                 }catch (e:Exception){
 
                 }
+
 
                 try {
                     val so2 = JSONObject(iaqi.getString("so2"))
@@ -421,8 +402,74 @@ view.getMeasuredHeight(),
                 adapter.notifyDataSetChanged()
 
                 textViewCityName.text = name
-//                text_name_shared.text = name
 
+                Log.d("testName",name.replace(",","").replace(" ",""))
+
+                key_data = name.replace(",","").replace(" ","")
+
+
+                val current = LocalDateTime.now()
+
+                val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+                val formatted = current.format(formatter)
+
+                val formatter2 = DateTimeFormatter.ofPattern("MM/yyyy")
+                val formatted2 = current.format(formatter2)
+
+                val data_graph = HashMap<String,Any>()
+                data_graph.put("date",formatted2)
+                data_graph.put("text",pm2Text)
+
+                myRefGraph.child(key_data+"/"+formatted+pm2Text).updateChildren(data_graph)
+
+                val graphView = findViewById<RecyclerView>(R.id.graph_view)
+                var dataGraph = ArrayList<GraphViewModel>()
+
+                val adapterGraph = GraphViewAdapter(dataGraph)
+                graphView.adapter = adapterGraph
+
+                graphView.layoutManager = LinearLayoutManager(this@MainDetailsActivity)
+                graphView.layoutManager = LinearLayoutManager(this@MainDetailsActivity, LinearLayoutManager.HORIZONTAL, false)
+
+                graphView.setScrollingTouchSlop(RecyclerView.TOUCH_SLOP_PAGING)
+                val snapHelper = LinearSnapHelper() // Or PagerSnapHelper
+                snapHelper.attachToRecyclerView(graphView)
+
+                val GraphListener = object : ValueEventListener {
+                    override fun onCancelled(p0: DatabaseError) {
+
+                    }
+
+                    override fun onDataChange(p0: DataSnapshot) {
+                        dataGraph.clear()
+                        val i = p0.children.iterator()
+                        while (i.hasNext()) {
+                            val i_data = (i.next() as DataSnapshot)
+                            val date = i_data.child("date").value.toString()
+                            val aqi = i_data.child("text").value.toString().toInt()
+                            var  color = "#4caf50"
+                            if (aqi <= 50) {
+                                color = "#4caf50"
+                            } else if (aqi <= 100) {
+                                color = "#ffeb3b"
+                            } else if (aqi <= 150) {
+                                color = "#ffc107"
+                            } else if (aqi <= 200) {
+                                color = "#f44336"
+                            } else if (aqi <= 300) {
+                                color = "#9c27b0"
+                            } else {
+                                color = "#bb1950"
+                            }
+                            dataGraph.add(GraphViewModel(date,aqi,color))
+
+                        }
+                        adapterGraph.notifyDataSetChanged()
+                    }
+
+                }
+
+                myRefGraph.child(key_data).addValueEventListener(GraphListener)
 
                 Handler().postDelayed(Runnable {
                     shimmer_view_container.stopShimmer()
