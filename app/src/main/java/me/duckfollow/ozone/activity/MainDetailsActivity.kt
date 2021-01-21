@@ -5,23 +5,18 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.*
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.provider.MediaStore
-import android.util.DisplayMetrics
 import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.FileProvider
 import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSnapHelper
@@ -35,12 +30,8 @@ import com.google.android.gms.ads.formats.NativeAdOptions
 import com.google.android.gms.ads.formats.UnifiedNativeAd
 import com.google.android.gms.ads.formats.UnifiedNativeAdView
 import com.google.android.gms.ads.initialization.OnInitializationCompleteListener
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.activity_main_details.*
-import me.duckfollow.ozone.MapsActivity
 import me.duckfollow.ozone.R
 import me.duckfollow.ozone.adapter.AqiListAdapter
 import me.duckfollow.ozone.adapter.GraphViewAdapter
@@ -50,18 +41,13 @@ import me.duckfollow.ozone.user.UserProfile
 import me.duckfollow.ozone.util.ApiConnection
 import me.duckfollow.ozone.utils.ConvertImagetoBase64
 import me.duckfollow.ozone.view.ArcProgress
-import me.duckfollow.ozone.view.NativeTemplateStyle
-import me.duckfollow.ozone.view.TemplateView
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.collections.ArrayList
-
 
 
 class MainDetailsActivity : AppCompatActivity() {
@@ -97,9 +83,11 @@ class MainDetailsActivity : AppCompatActivity() {
         initView()
 
         val location_data = intent.extras
-        val url = "https://api.waqi.info/feed/geo:"+ location_data!!.getString("lat")+";"+location_data.getString("lon")+"/?token=fe5f8a6aa99f6bfb397762a0cade98a6d78795a6"
+        val url = "https://api.waqi.info/feed/geo:"+ location_data!!.getString("lat")+";"+location_data.getString(
+            "lon"
+        )+"/?token=fe5f8a6aa99f6bfb397762a0cade98a6d78795a6"
         TaskData().execute(url)
-        Log.d("data_res_url",url)
+        Log.d("data_res_url", url)
 
         val database = FirebaseDatabase.getInstance().reference
         myRefGraph = database.child("graph/")
@@ -110,9 +98,14 @@ class MainDetailsActivity : AppCompatActivity() {
 
         btn_shared.setOnClickListener {
 
-            if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this,
-                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), STORAGE_PERMISSION)
+            if (ContextCompat.checkSelfPermission(
+                    applicationContext,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), STORAGE_PERMISSION
+                )
 
             }else {
                 shared()
@@ -145,10 +138,12 @@ class MainDetailsActivity : AppCompatActivity() {
 
     }
 
-    fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
+    fun getCroppedBitmap(bitmap: Bitmap):Bitmap {
 
-        val output = Bitmap.createBitmap(bitmap.getWidth(),
-            bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+        val output = Bitmap.createBitmap(
+            bitmap.getWidth(),
+            bitmap.getHeight(), Bitmap.Config.ARGB_8888
+        );
         val canvas = Canvas(output);
 
         val color = getResources().getColor(R.color.colorPrimary)
@@ -161,7 +156,8 @@ class MainDetailsActivity : AppCompatActivity() {
         // canvas.drawRoundRect(rectF, roundPx, roundPx, paint);
         canvas.drawCircle(
             (bitmap.getWidth() / 2).toFloat(), (bitmap.getHeight() / 2).toFloat(),
-            (bitmap.getWidth() / 2).toFloat(), paint);
+            (bitmap.getWidth() / 2).toFloat(), paint
+        );
         paint.setXfermode(PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
         canvas.drawBitmap(bitmap, rect, rect, paint);
         //Bitmap _bmp = Bitmap.createScaledBitmap(output, 60, 60, false);
@@ -179,16 +175,21 @@ class MainDetailsActivity : AppCompatActivity() {
 //
 //        val shareIntent = Intent.createChooser(sendIntent, "OzoneNotIncluded_Share")
 //        startActivity(shareIntent)
-        val i_shared = Intent(this,SharedActivity::class.java)
-        i_shared.putExtra("aqi",txtViewIaqi.text)
-        i_shared.putExtra("city",textViewCityName.text)
+        val i_shared = Intent(this, SharedActivity::class.java)
+        i_shared.putExtra("aqi", txtViewIaqi.text)
+        i_shared.putExtra("city", textViewCityName.text)
         startActivity(i_shared)
     }
 
-    fun getImageUri(inImage:Bitmap): Uri {
+    fun getImageUri(inImage: Bitmap): Uri {
           val bytes = ByteArrayOutputStream();
           inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-          val path = MediaStore.Images.Media.insertImage(this.getContentResolver(), inImage, "OzoneNotIncluded_Share", null);
+          val path = MediaStore.Images.Media.insertImage(
+              this.getContentResolver(),
+              inImage,
+              "OzoneNotIncluded_Share",
+              null
+          );
           return Uri.parse(path);
     }
 
@@ -220,15 +221,23 @@ class MainDetailsActivity : AppCompatActivity() {
 
     fun showShared(){
         TapTargetView.showFor(this,
-            TapTarget.forView(btn_shared,"ปุ่มแชร์", "คุณสามารถแชร์ไปสตอรี่ของคุณได้").cancelable(false),
+            TapTarget.forView(btn_shared, "ปุ่มแชร์", "คุณสามารถแชร์ไปสตอรี่ของคุณได้").cancelable(
+                false
+            ),
             object : TapTargetView.Listener() {
                 override fun onTargetClick(view: TapTargetView) {
                     super.onTargetClick(view)
                     UserProfile(this@MainDetailsActivity).setMainDetailsTutorial(false.toString())
-                    if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                        ActivityCompat.requestPermissions(this@MainDetailsActivity,
-                            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), STORAGE_PERMISSION)
-                    }else {
+                    if (ContextCompat.checkSelfPermission(
+                            applicationContext,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE
+                        ) != PackageManager.PERMISSION_GRANTED
+                    ) {
+                        ActivityCompat.requestPermissions(
+                            this@MainDetailsActivity,
+                            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), STORAGE_PERMISSION
+                        )
+                    } else {
                         shared()
                     }
                 }
@@ -257,17 +266,30 @@ class MainDetailsActivity : AppCompatActivity() {
         return bitmap
     }
 
-    private fun getBitmapFromView(view:View):Bitmap {
-        view.setLayoutParams(RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,RelativeLayout.LayoutParams.MATCH_PARENT));
+    private fun getBitmapFromView(view: View):Bitmap {
+        view.setLayoutParams(
+            RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.MATCH_PARENT,
+                RelativeLayout.LayoutParams.MATCH_PARENT
+            )
+        );
         val dm = this.getResources().getDisplayMetrics();
-            view.measure(View.MeasureSpec.makeMeasureSpec(dm.widthPixels,
-                View.MeasureSpec.EXACTLY),
-                View.MeasureSpec.makeMeasureSpec(dm.heightPixels,
-                    View.MeasureSpec.EXACTLY));
+            view.measure(
+                View.MeasureSpec.makeMeasureSpec(
+                    dm.widthPixels,
+                    View.MeasureSpec.EXACTLY
+                ),
+                View.MeasureSpec.makeMeasureSpec(
+                    dm.heightPixels,
+                    View.MeasureSpec.EXACTLY
+                )
+            );
         view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
-        val bitmap = Bitmap.createBitmap(view.getMeasuredWidth(),
-view.getMeasuredHeight(),
-                Bitmap.Config.ARGB_8888);
+        val bitmap = Bitmap.createBitmap(
+            view.getMeasuredWidth(),
+            view.getMeasuredHeight(),
+            Bitmap.Config.ARGB_8888
+        );
 
         val canvas = Canvas(bitmap);
         view.layout(view.getLeft(), view.getTop(), view.getRight(), view.getBottom());
@@ -290,7 +312,7 @@ view.getMeasuredHeight(),
         }
     }
     @SuppressLint("StaticFieldLeak")
-    inner class TaskData:AsyncTask<String,String,String>(){
+    inner class TaskData:AsyncTask<String, String, String>(){
         override fun onPreExecute() {
             super.onPreExecute()
             data.clear()
@@ -317,28 +339,28 @@ view.getMeasuredHeight(),
                 try {
                     val co = JSONObject(iaqi.getString("co"))
                     val v = co.getString("v")
-                    data.add(AqiModel("co",v))
+                    data.add(AqiModel("co", v))
                 } catch (e: Exception) {
 
                 }
                 try {
                     val no2 = JSONObject(iaqi.getString("no2"))
                     val v = no2.getString("v")
-                    data.add(AqiModel("no2",v))
+                    data.add(AqiModel("no2", v))
                 } catch (e: Exception) {
 
                 }
                 try {
                     val o3 = JSONObject(iaqi.getString("o3"))
                     val v = o3.getString("v")
-                    data.add(AqiModel("o3",v))
+                    data.add(AqiModel("o3", v))
                 } catch (e: Exception) {
 
                 }
                 try {
                     val pm10 = JSONObject(iaqi.getString("pm10"))
                     val v = pm10.getString("v")
-                    data.add(AqiModel("pm10",v))
+                    data.add(AqiModel("pm10", v))
                 } catch (e: Exception) {
 
                 }
@@ -347,7 +369,7 @@ view.getMeasuredHeight(),
                     val pm25 = JSONObject(iaqi.getString("pm25"))
                     val v = pm25.getString("v")
                     pm2Text = v
-                    data.add(AqiModel("pm25",v))
+                    data.add(AqiModel("pm25", v))
                     txtViewIaqi.text = v
 //                    text_pm_shared.text = v
                     progress.textShow = v
@@ -383,10 +405,10 @@ view.getMeasuredHeight(),
                             text_details.text = "อันตราย"
                             text_details.setTextColor(getResources().getColor(R.color.colorRed))
                         }
-                    }catch (e:Exception){
+                    }catch (e: Exception){
 
                     }
-                }catch (e:Exception){
+                }catch (e: Exception){
 
                 }
 
@@ -394,7 +416,7 @@ view.getMeasuredHeight(),
                 try {
                     val so2 = JSONObject(iaqi.getString("so2"))
                     val v = so2.getString("v")
-                    data.add(AqiModel("so2",v))
+                    data.add(AqiModel("so2", v))
                 } catch (e: Exception) {
 
                 }
@@ -403,9 +425,9 @@ view.getMeasuredHeight(),
 
                 textViewCityName.text = name
 
-                Log.d("testName",name.replace(",","").replace(" ",""))
+                Log.d("testName", name.replace(",", "").replace(" ", ""))
 
-                key_data = name.replace(",","").replace(" ","")
+                key_data = name.replace(",", "").replace(" ", "")
 
 
                 val current = LocalDateTime.now()
@@ -416,11 +438,15 @@ view.getMeasuredHeight(),
                 val formatter2 = DateTimeFormatter.ofPattern("MM/yyyy")
                 val formatted2 = current.format(formatter2)
 
-                val data_graph = HashMap<String,Any>()
-                data_graph.put("date",formatted2)
-                data_graph.put("text",pm2Text)
+                val now = Date()
+                val timestamp = now.time
 
-                myRefGraph.child(key_data+"/"+formatted+pm2Text).updateChildren(data_graph)
+                val data_graph = HashMap<String, Any>()
+                data_graph.put("date", formatted2)
+                data_graph.put("text", pm2Text)
+                data_graph.put("timestamp", timestamp)
+
+                myRefGraph.child(key_data + "/" + formatted + pm2Text).updateChildren(data_graph)
 
                 val graphView = findViewById<RecyclerView>(R.id.graph_view)
                 var dataGraph = ArrayList<GraphViewModel>()
@@ -429,7 +455,11 @@ view.getMeasuredHeight(),
                 graphView.adapter = adapterGraph
 
                 graphView.layoutManager = LinearLayoutManager(this@MainDetailsActivity)
-                graphView.layoutManager = LinearLayoutManager(this@MainDetailsActivity, LinearLayoutManager.HORIZONTAL, false)
+                graphView.layoutManager = LinearLayoutManager(
+                    this@MainDetailsActivity,
+                    LinearLayoutManager.HORIZONTAL,
+                    false
+                )
 
                 graphView.setScrollingTouchSlop(RecyclerView.TOUCH_SLOP_PAGING)
                 val snapHelper = LinearSnapHelper() // Or PagerSnapHelper
@@ -461,7 +491,7 @@ view.getMeasuredHeight(),
                             } else {
                                 color = "#bb1950"
                             }
-                            dataGraph.add(GraphViewModel(date,aqi,color))
+                            dataGraph.add(GraphViewModel(date, aqi, color))
 
                         }
                         adapterGraph.notifyDataSetChanged()
@@ -469,17 +499,19 @@ view.getMeasuredHeight(),
 
                 }
 
-                myRefGraph.child(key_data).addValueEventListener(GraphListener)
+                myRefGraph.child(key_data).orderByChild("timestamp").addValueEventListener(GraphListener)
 
                 Handler().postDelayed(Runnable {
                     shimmer_view_container.stopShimmer()
                     shimmer_view_container.visibility = View.GONE
                     scroll_view.visibility = View.VISIBLE
-                    if(UserProfile(this@MainDetailsActivity).getMainDetailsTutorial().toBoolean()){
+                    if (UserProfile(this@MainDetailsActivity).getMainDetailsTutorial()
+                            .toBoolean()
+                    ) {
                         showShared()
                     }
-                },1000)
-            }catch (e:Exception){
+                }, 1000)
+            }catch (e: Exception){
 
             }
 

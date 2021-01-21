@@ -844,9 +844,13 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
                     val formatter2 = DateTimeFormatter.ofPattern("MM/yyyy")
                     val formatted2 = current.format(formatter2)
 
+                    val now = Date()
+                    val timestamp = now.time
+
                     val data_graph = java.util.HashMap<String, Any>()
                     data_graph.put("date",formatted2)
                     data_graph.put("text",pm2Text)
+                    data_graph.put("timestamp",timestamp)
 
                     myRefGraph.child(key_data+"/"+formatted+pm2Text).updateChildren(data_graph)
 

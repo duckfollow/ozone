@@ -20,13 +20,14 @@
                 android:id="@+id/txt_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="14dp"
+                android:textSize="16sp"
                 android:textStyle="bold"/>
             <TextView
                 android:id="@+id/txt_aqi"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="30dp"
+                android:textSize="30sp"
+                android:textStyle="bold"
                 android:textAlignment="center"/>
             <View
                 android:layout_width="match_parent"
@@ -38,6 +39,8 @@
                 android:id="@+id/txt_details"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textStyle="bold"
                 />
         </LinearLayout>
 
