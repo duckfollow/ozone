@@ -59,6 +59,7 @@ import com.google.zxing.WriterException
 import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import kotlinx.android.synthetic.main.activity_maps.*
+import kotlinx.android.synthetic.main.notification_collapsed.*
 import me.duckfollow.ozone.activity.ErrorActivity
 import me.duckfollow.ozone.activity.LocationMangerActivity
 import me.duckfollow.ozone.activity.MainDetailsActivity
@@ -108,15 +109,25 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     lateinit var myRefaddLocation: DatabaseReference
     lateinit var myRefNotification: DatabaseReference
 
+    lateinit var myRefMyLocation: DatabaseReference
+
     lateinit var myRefGraph: DatabaseReference
 
     lateinit var manager: ReviewManager
     var reviewInfo: ReviewInfo? = null
 
+    @SuppressLint("HardwareIds")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
         initView()
+
+        //set default text
+        text_pm.text = UserProfile(this).getPm25()
+        text_pm_details.text = UserProfile(this).getTextDetail()
+        txt_station.text = UserProfile(this).getNameStation()
+        txt_station.isSelected = true
+
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
@@ -145,28 +156,30 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
             val activityOptionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(this, btn_profile, "view_profile")
             startActivity(i_profile,activityOptionsCompat.toBundle())
         }
-        val android_id = Settings.Secure.getString(this.getContentResolver(),
-            Settings.Secure.ANDROID_ID);
+        val android_id = Settings.Secure.getString(this.contentResolver,
+            Settings.Secure.ANDROID_ID)
         val database = FirebaseDatabase.getInstance().reference
-        myRefUser = database.child("location/"+android_id+"/")
-        myRefLocation = database.child("user/"+android_id+"/subscribe/")
-        myRefNotification = database.child("user/"+android_id+"/notification/")
+        myRefUser = database.child("location/$android_id/")
+        myRefLocation = database.child("user/$android_id/subscribe/")
+        myRefNotification = database.child("user/$android_id/notification/")
         myRefaddLocation = database.child("location/")
+
+        myRefMyLocation = database.child("location/$android_id")
 
         myRefGraph = database.child("graph/")
 
         try {
-            val serviceIntent = Intent(this, MyNotification::class.java);
-            serviceIntent.putExtra("inputExtra", "Foreground Service Example in Android");
-            ContextCompat.startForegroundService(this, serviceIntent);
+            val serviceIntent = Intent(this, MyNotification::class.java)
+            serviceIntent.putExtra("inputExtra", "Foreground Service Example in Android")
+            ContextCompat.startForegroundService(this, serviceIntent)
         }catch (e:Exception){
 
         }
 
-//        val manager = ReviewManagerFactory.create(applicationContext)
-//        val manager = FakeReviewManager(applicationContext)
-
         initReviews()
+
+
+
 
     }
 
@@ -263,31 +276,31 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         mMap.setOnMapClickListener(this)
 
         try {
-            val view_compass = (viewMap.findViewById<View>(Integer.parseInt("1")).getParent() as View).findViewById<View>(Integer.parseInt("5"))
+            val view_compass = (viewMap.findViewById<View>(Integer.parseInt("1")).parent as View).findViewById<View>(Integer.parseInt("5"))
             val layoutParams = view_compass.layoutParams as RelativeLayout.LayoutParams
             // position on right bottom
-            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
-            layoutParams.setMargins(0, 660, 30, 0); // 160 la truc y , 30 la  truc x
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE)
+            layoutParams.setMargins(0, 660, 30, 0) // 160 la truc y , 30 la  truc x
         }catch (e:java.lang.Exception){
             Log.e("error_view",e.toString())
         }
 
-        val hashMapMarker = HashMap<String,Marker>();
+        val hashMapMarker = HashMap<String,Marker>()
         val addLocation = object : ValueEventListener{
             override fun onCancelled(p0: DatabaseError) {
 
             }
             override fun onDataChange(p0: DataSnapshot) {
 
-                val lat = p0.child("latitude").getValue().toString()
-                val long = p0.child("longitude").getValue().toString()
-                val img = p0.child("img").getValue().toString()
-                UserProfile(this@MapsActivity).setImageBase64(img)
+                val lat = p0.child("latitude").value.toString()
+                val long = p0.child("longitude").value.toString()
+                val img = p0.child("img").value.toString()
+//                UserProfile(this@MapsActivity).setImageBase64(img)
 
                 try {
-                    val markerRemove = hashMapMarker.get(p0.key.toString());
+                    val markerRemove = hashMapMarker.get(p0.key.toString())
                     markerRemove!!.remove()
-                    hashMapMarker.remove(p0.key.toString());
+                    hashMapMarker.remove(p0.key.toString())
                 }catch (e:java.lang.Exception){
 
                 }
@@ -306,7 +319,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                             .icon(BitmapDescriptorFactory.fromBitmap(imgBitmap))
                     )
                     marker.zIndex = 1F
-                    hashMapMarker.put(p0.key.toString(),marker);
+                    hashMapMarker.put(p0.key.toString(),marker)
                     Log.d("key_event2",p0.key.toString())
                 }catch (e:Exception){
 
@@ -334,6 +347,52 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         }
 
         myRefLocation.addValueEventListener(locationListener)
+
+        val mylocationListener = object : ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val lat = snapshot.child("latitude").value.toString()
+                val long = snapshot.child("longitude").value.toString()
+                val img = snapshot.child("img").value.toString()
+                UserProfile(this@MapsActivity).setImageBase64(img)
+
+                try {
+                    val markerRemove = hashMapMarker.get(snapshot.key.toString())
+                    markerRemove!!.remove()
+                    hashMapMarker.remove(snapshot.key.toString())
+                }catch (e:java.lang.Exception){
+
+                }
+
+                try {
+                    val b = ConvertImagetoBase64().base64ToBitmap(img)
+                    val imgBitmap = getCroppedBitmap(ConvertImagetoBase64().getResizedBitmap(b,150,150))
+                    val marker = mMapLocation.addMarker(
+                        MarkerOptions()
+                            .position(
+                                LatLng(
+                                    lat.toDouble(),
+                                    long.toDouble()
+                                )
+                            )
+                            .icon(BitmapDescriptorFactory.fromBitmap(imgBitmap))
+                    )
+                    marker.zIndex = 1F
+                    hashMapMarker.put(snapshot.key.toString(),marker)
+                    Log.d("key_event2",snapshot.key.toString())
+                }catch (e:Exception){
+
+                }
+
+                Log.d("key_event",lat+"//"+long)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+
+            }
+
+        }
+
+        myRefMyLocation.addValueEventListener(mylocationListener)
     }
 
     override fun onMarkerClick(p0: Marker?): Boolean {
@@ -393,26 +452,26 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
 fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
 
-    val output = Bitmap.createBitmap(bitmap.getWidth(),
-            bitmap.getHeight(), Bitmap.Config.ARGB_8888);
-    val canvas = Canvas(output);
+    val output = Bitmap.createBitmap(bitmap.width,
+            bitmap.height, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(output)
 
-    val color = getResources().getColor(R.color.colorPrimary)
-    val paint = Paint();
-    val rect = Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+    val color = resources.getColor(R.color.colorPrimary)
+    val paint = Paint()
+    val rect = Rect(0, 0, bitmap.width, bitmap.height)
 
-    paint.setAntiAlias(true);
-    canvas.drawARGB(0, 0, 0, 0);
-    paint.setColor(color);
+    paint.isAntiAlias = true
+    canvas.drawARGB(0, 0, 0, 0)
+    paint.color = color
     // canvas.drawRoundRect(rectF, roundPx, roundPx, paint);
     canvas.drawCircle(
-        (bitmap.getWidth() / 2).toFloat(), (bitmap.getHeight() / 2).toFloat(),
-        (bitmap.getWidth() / 2).toFloat(), paint);
-    paint.setXfermode(PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
-    canvas.drawBitmap(bitmap, rect, rect, paint);
+        (bitmap.width / 2).toFloat(), (bitmap.height / 2).toFloat(),
+        (bitmap.width / 2).toFloat(), paint)
+    paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
+    canvas.drawBitmap(bitmap, rect, rect, paint)
     //Bitmap _bmp = Bitmap.createScaledBitmap(output, 60, 60, false);
     //return _bmp;
-    return output;
+    return output
 }
 
     private fun getMarkerBitmapFromView ():Bitmap {
@@ -424,16 +483,16 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
             img = getCroppedBitmap(ConvertImagetoBase64().getResizedBitmap(b,150,150))
         }
         markerImageView.setImageBitmap(img)
-        customMarkerView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-        customMarkerView.layout(0, 0, customMarkerView.getMeasuredWidth(), customMarkerView.getMeasuredHeight());
-        customMarkerView.buildDrawingCache();
-        val returnedBitmap = Bitmap.createBitmap(customMarkerView.getMeasuredWidth(), customMarkerView.getMeasuredHeight(),
-            Bitmap.Config.ARGB_8888);
-        val canvas = Canvas(returnedBitmap);
-        val drawable = customMarkerView.getBackground();
+        customMarkerView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
+        customMarkerView.layout(0, 0, customMarkerView.measuredWidth, customMarkerView.measuredHeight)
+        customMarkerView.buildDrawingCache()
+        val returnedBitmap = Bitmap.createBitmap(customMarkerView.measuredWidth, customMarkerView.measuredHeight,
+            Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(returnedBitmap)
+        val drawable = customMarkerView.background
         if (drawable != null)
-            drawable.draw(canvas);
-        customMarkerView.draw(canvas);
+            drawable.draw(canvas)
+        customMarkerView.draw(canvas)
         return returnedBitmap
     }
 
@@ -527,7 +586,7 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
 
         val bottomSheet = bottomSheetDialogLoading.findViewById<View>(R.id.design_bottom_sheet)
         val behavior = BottomSheetBehavior.from(bottomSheet!!)
-        behavior.peekHeight = Resources.getSystem().getDisplayMetrics().heightPixels* Resources.getSystem().displayMetrics.density.toInt()
+        behavior.peekHeight = Resources.getSystem().displayMetrics.heightPixels* Resources.getSystem().displayMetrics.density.toInt()
 
         val btn_cancel = mView.findViewById<Button>(R.id.btn_cancel)
         btn_cancel.setOnClickListener {
@@ -537,9 +596,9 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
 
         val btn_review = mView.findViewById<Button>(R.id.btn_review)
         btn_review.setOnClickListener {
-            val uri = Uri.parse("https://play.google.com/store/apps/details?id=me.duckfollow.ozone"); // missing 'http://' will cause crashed
-            val intent = Intent(Intent.ACTION_VIEW, uri);
-            startActivity(intent);
+            val uri = Uri.parse("https://play.google.com/store/apps/details?id=me.duckfollow.ozone") // missing 'http://' will cause crashed
+            val intent = Intent(Intent.ACTION_VIEW, uri)
+            startActivity(intent)
             UserProfile(this).setCountReview("99")
             bottomSheetDialogLoading.cancel()
         }
@@ -639,14 +698,14 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
             val canvas = Canvas(bm)
             val p = Paint()
             if(air > 200) {
-                p.setColor(getResources().getColor(R.color.colorRed))
+                p.color = resources.getColor(R.color.colorRed)
             }else {
-                p.setColor(getResources().getColor(R.color.colorGreen))
+                p.color = resources.getColor(R.color.colorGreen)
             }
             canvas.drawCircle((diameter / 2).toFloat(), (diameter / 2).toFloat(),
                 (diameter / 2).toFloat(), p)
-            p.setColor(android.R.color.white);
-            p.setTextSize(20.0F);
+            p.color = android.R.color.white
+            p.textSize = 20.0F
             canvas.drawText("text", (diameter/2).toFloat(), (diameter/2).toFloat(),p)
 
             return bm
@@ -664,17 +723,17 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
                 val paint2 = Paint()
 
                 if (aqi <= 50) {
-                    paint2.color = getResources().getColor(R.color.colorGreen)
+                    paint2.color = resources.getColor(R.color.colorGreen)
                 } else if (aqi <= 100) {
-                    paint2.color = getResources().getColor(R.color.colorYellow)
+                    paint2.color = resources.getColor(R.color.colorYellow)
                 } else if (aqi <= 150) {
-                    paint2.color = getResources().getColor(R.color.colorOrange)
+                    paint2.color = resources.getColor(R.color.colorOrange)
                 } else if (aqi <= 200) {
-                    paint2.color = getResources().getColor(R.color.colorPink)
+                    paint2.color = resources.getColor(R.color.colorPink)
                 } else if (aqi <= 300) {
-                    paint2.color = getResources().getColor(R.color.colorViolet)
+                    paint2.color = resources.getColor(R.color.colorViolet)
                 } else {
-                    paint2.color = getResources().getColor(R.color.colorRed)
+                    paint2.color = resources.getColor(R.color.colorRed)
                 }
 
                 canvas.drawCircle(
@@ -760,7 +819,7 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
         val height = 250
         val width = 250
         val bitmapdraw = resources.getDrawable(R.drawable.marker_icon) as BitmapDrawable
-        val b = bitmapdraw.getBitmap()
+        val b = bitmapdraw.bitmap
         val smallMarker = Bitmap.createScaledBitmap(b, width, height, false)
         return smallMarker
     }
@@ -788,6 +847,7 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
                 txt_station.text = name
 
                 var pm2Text = "0"
+                var textDetails = ""
 
                 try {
                     val iaqi = JSONObject(data.getString("iaqi"))
@@ -796,36 +856,47 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
                     pm2Text = v
                     text_pm.text = v
 
+
                     try {
                         val aqi = v.toInt()
                         if (aqi <= 50) {
                             text_pm.setTextColor(resources.getColor(R.color.green))
-                            text_pm_details.text = "ดี"
+                            textDetails = "ดี"
+                            text_pm_details.text = textDetails
                             text_pm_details.setTextColor(resources.getColor(R.color.green))
                         }else if (aqi>50 && aqi <=100) {
                             text_pm.setTextColor(resources.getColor(R.color.yellow))
+                            textDetails = "ปานกลาง"
                             text_pm_details.text = "ปานกลาง"
                             text_pm_details.setTextColor(resources.getColor(R.color.yellow))
                         }else if (aqi > 100 && aqi <= 150) {
                             text_pm.setTextColor(resources.getColor(R.color.orange))
+                            textDetails = "ไม่ดีต่อสุขภาพผู้ป่วยภูมิแพ้"
                             text_pm_details.text = "ไม่ดีต่อสุขภาพผู้ป่วยภูมิแพ้"
                             text_pm_details.setTextColor(resources.getColor(R.color.orange))
                         }else if (aqi > 150 && aqi < 200) {
                             text_pm.setTextColor(resources.getColor(R.color.red))
+                            textDetails = "ไม่ดีต่อสุขภาพ"
                             text_pm_details.text = "ไม่ดีต่อสุขภาพ"
                             text_pm_details.setTextColor(resources.getColor(R.color.red))
                         }else if (aqi < 200 && aqi <= 300) {
                             text_pm.setTextColor(resources.getColor(R.color.violet))
+                            textDetails = "ไม่ดีต่อสุขภาพมาก"
                             text_pm_details.text = "ไม่ดีต่อสุขภาพมาก"
                             text_pm_details.setTextColor(resources.getColor(R.color.violet))
                         } else {
                             text_pm.setTextColor(resources.getColor(R.color.super_red))
+                            textDetails = "อันตราย"
                             text_pm_details.text = "อันตราย"
                             text_pm_details.setTextColor(resources.getColor(R.color.super_red))
                         }
                     }catch (e:Exception) {
 
                     }
+
+                    UserProfile(this@MapsActivity).setPm25(pm2Text)
+                    UserProfile(this@MapsActivity).setTextDetail(textDetails)
+                    UserProfile(this@MapsActivity).setNameStation(name)
 
                     val data_notification = HashMap<String,Any>()
                     data_notification.put("station",name)
@@ -847,10 +918,14 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
                     val now = Date()
                     val timestamp = now.time
 
+                    val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
+                    val dateFormatted = current.format(dateFormat)
+
                     val data_graph = java.util.HashMap<String, Any>()
                     data_graph.put("date",formatted2)
                     data_graph.put("text",pm2Text)
                     data_graph.put("timestamp",timestamp)
+                    data_graph.put("datestamp",dateFormatted)
 
                     myRefGraph.child(key_data+"/"+formatted+pm2Text).updateChildren(data_graph)
 

@@ -68,6 +68,31 @@ class UserProfile {
         return User.getString("ExpandViewCorona","true")!!
     }
 
+    fun setPm25(pm25:String) {
+        this.setUserData("pm25", pm25)
+    }
+
+    fun getPm25():String {
+        return User.getString("pm25","0")!!
+    }
+
+    fun setTextDetail(txtDetail:String) {
+        this.setUserData("txtDetail", txtDetail)
+    }
+
+    fun getTextDetail():String {
+        return User.getString("txtDetail","ยังไม่มีข้อมูล")!!
+    }
+
+    fun setNameStation(namestation:String) {
+        this.setUserData("namestation", namestation)
+    }
+
+    fun getNameStation():String {
+        return User.getString("namestation","ยังไม่มีข้อมูล")!!
+    }
+
+
     fun setUserData(key:String,value:String){
         editor = User.edit()
         editor.putString(key, value)

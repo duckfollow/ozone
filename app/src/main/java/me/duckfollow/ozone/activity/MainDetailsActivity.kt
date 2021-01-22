@@ -441,10 +441,14 @@ class MainDetailsActivity : AppCompatActivity() {
                 val now = Date()
                 val timestamp = now.time
 
+                val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
+                val dateFormatted = current.format(dateFormat)
+
                 val data_graph = HashMap<String, Any>()
                 data_graph.put("date", formatted2)
                 data_graph.put("text", pm2Text)
                 data_graph.put("timestamp", timestamp)
+                data_graph.put("datestamp", dateFormatted)
 
                 myRefGraph.child(key_data + "/" + formatted + pm2Text).updateChildren(data_graph)
 
