@@ -46,6 +46,9 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.install.model.AppUpdateType
+import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.android.play.core.review.ReviewInfo
 import com.google.android.play.core.review.ReviewManager
 import com.google.android.play.core.review.ReviewManagerFactory
@@ -115,6 +118,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
     lateinit var manager: ReviewManager
     var reviewInfo: ReviewInfo? = null
+    var MY_REQUEST_CODE_UPDATE = 21
 
     @SuppressLint("HardwareIds")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -179,7 +183,31 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         initReviews()
 
 
+        //app update
+        // Creates instance of the manager.
+        val appUpdateManager = AppUpdateManagerFactory.create(this)
 
+        // Returns an intent object that you use to check for an update.
+        val appUpdateInfoTask = appUpdateManager.appUpdateInfo
+
+        // Checks that the platform will allow the specified type of update.
+        appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
+                // For a flexible update, use AppUpdateType.FLEXIBLE
+                && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)
+            ) {
+                // Request the update.
+                appUpdateManager.startUpdateFlowForResult(
+                    // Pass the intent that is returned by 'getAppUpdateInfo()'.
+                    appUpdateInfo,
+                    // Or 'AppUpdateType.FLEXIBLE' for flexible updates.
+                    AppUpdateType.IMMEDIATE,
+                    // The current activity making the update request.
+                    this,
+                    // Include a request code to later monitor this update request.
+                    MY_REQUEST_CODE_UPDATE)
+            }
+        }
 
     }
 
@@ -193,6 +221,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                 reviewInfo = request.result
             } else {
                 // Log error
+            }
+        }
+    }
+
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == MY_REQUEST_CODE_UPDATE) {
+            if (resultCode != RESULT_OK) {
+                // If the update is cancelled or fails,
+                // you can request to start the update again.
             }
         }
     }
@@ -258,7 +297,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
             })
     }
 
-    private  fun initView(){
+    private fun initView(){
         text_pm = findViewById(R.id.text_pm)
         txt_station = findViewById(R.id.txt_station)
         card_view = findViewById(R.id.card_view)
@@ -558,10 +597,20 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
         if(UserProfile(this).getImageBase64() != ""){
             img_base64 = UserProfile(this).getImageBase64()
         }
+
+        val current = LocalDateTime.now()
+        val now = Date()
+        val timestamp = now.time
+
+        val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
+        val dateFormatted = current.format(dateFormat)
+        //update location
         val map = HashMap<String, Any>()
         map.put("img",img_base64)
         map.put("latitude",p0.latitude)
         map.put("longitude",p0.longitude)
+        map.put("timestamp",timestamp)
+        map.put("datestamp",dateFormatted)
         myRefUser.updateChildren(map)
 
     }
@@ -898,11 +947,6 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
                     UserProfile(this@MapsActivity).setTextDetail(textDetails)
                     UserProfile(this@MapsActivity).setNameStation(name)
 
-                    val data_notification = HashMap<String,Any>()
-                    data_notification.put("station",name)
-                    data_notification.put("text",v)
-
-                    myRefNotification.updateChildren(data_notification)
 
                     //HereThis
                     val key_data = name.replace(",","").replace(" ","")
@@ -920,6 +964,15 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
 
                     val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
                     val dateFormatted = current.format(dateFormat)
+
+                    val data_notification = HashMap<String,Any>()
+                    data_notification.put("station",name)
+                    data_notification.put("text",v)
+                    data_notification.put("timestamp",timestamp)
+                    data_notification.put("datestamp",dateFormatted)
+
+                    myRefNotification.updateChildren(data_notification)
+
 
                     val data_graph = java.util.HashMap<String, Any>()
                     data_graph.put("date",formatted2)

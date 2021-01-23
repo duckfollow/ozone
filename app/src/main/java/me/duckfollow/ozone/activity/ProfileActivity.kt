@@ -101,7 +101,7 @@ class ProfileActivity : AppCompatActivity() {
 
     private val REQUEST_CAMERA = 24
 
-    val ADMOB_AD_UNIT_ID = "ca-app-pub-2582707291059118/4934366945"
+    var ADMOB_AD_UNIT_ID = ""
     var currentNativeAd: UnifiedNativeAd? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -110,6 +110,7 @@ class ProfileActivity : AppCompatActivity() {
 
         android_id = Settings.Secure.getString(this.getContentResolver(),
             Settings.Secure.ANDROID_ID);
+        ADMOB_AD_UNIT_ID = resources.getString(R.string.ad_mob_key)
         initView()
         btn_back.setOnClickListener {
             supportFinishAfterTransition()

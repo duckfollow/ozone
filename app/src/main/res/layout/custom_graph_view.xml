@@ -22,7 +22,8 @@
         <View
             android:id="@+id/view_graph"
             android:layout_width="25dp"
-            android:layout_height="200dp"
-            android:background="@color/white" />
+            android:layout_height="10dp"
+            android:background="@color/gnt_ad_green"
+            android:layout_gravity="bottom"/>
     </LinearLayout>
 </LinearLayout>

@@ -70,7 +70,7 @@ class MainDetailsActivity : AppCompatActivity() {
 
     private val STORAGE_PERMISSION = 3
 
-    val ADMOB_AD_UNIT_ID = "ca-app-pub-2582707291059118/4934366945"
+    var ADMOB_AD_UNIT_ID = ""
     var currentNativeAd: UnifiedNativeAd? = null
 
     lateinit var myRefGraph: DatabaseReference
@@ -81,6 +81,7 @@ class MainDetailsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main_details)
         initView()
+        ADMOB_AD_UNIT_ID = resources.getString(R.string.ad_mob_key)
 
         val location_data = intent.extras
         val url = "https://api.waqi.info/feed/geo:"+ location_data!!.getString("lat")+";"+location_data.getString(
@@ -123,46 +124,33 @@ class MainDetailsActivity : AppCompatActivity() {
 
         refreshAd()
 
-
-        //GraphView
-
-
-
-//        progress < 10 -> colorCustom = Color.parseColor("#4caf50")
-//        progress in 10..19 -> colorCustom = Color.parseColor("#ffeb3b")
-//        progress in 20..29 -> colorCustom = Color.parseColor("#ffc107")
-//        progress in 30..39 -> colorCustom = Color.parseColor("#f44336")
-//        progress in 40..59 -> colorCustom = Color.parseColor("#9c27b0")
-//        progress > 59 -> colorCustom = Color.parseColor("#bb1950")
-
-
     }
 
     fun getCroppedBitmap(bitmap: Bitmap):Bitmap {
 
         val output = Bitmap.createBitmap(
-            bitmap.getWidth(),
-            bitmap.getHeight(), Bitmap.Config.ARGB_8888
-        );
-        val canvas = Canvas(output);
+            bitmap.width,
+            bitmap.height, Bitmap.Config.ARGB_8888
+        )
+        val canvas = Canvas(output)
 
-        val color = getResources().getColor(R.color.colorPrimary)
-        val paint = Paint();
-        val rect = Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+        val color = resources.getColor(R.color.colorPrimary)
+        val paint = Paint()
+        val rect = Rect(0, 0, bitmap.width, bitmap.height)
 
-        paint.setAntiAlias(true);
-        canvas.drawARGB(0, 0, 0, 0);
-        paint.setColor(color);
+        paint.isAntiAlias = true
+        canvas.drawARGB(0, 0, 0, 0)
+        paint.color = color
         // canvas.drawRoundRect(rectF, roundPx, roundPx, paint);
         canvas.drawCircle(
-            (bitmap.getWidth() / 2).toFloat(), (bitmap.getHeight() / 2).toFloat(),
-            (bitmap.getWidth() / 2).toFloat(), paint
-        );
-        paint.setXfermode(PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
-        canvas.drawBitmap(bitmap, rect, rect, paint);
+            (bitmap.width / 2).toFloat(), (bitmap.height / 2).toFloat(),
+            (bitmap.width / 2).toFloat(), paint
+        )
+        paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
+        canvas.drawBitmap(bitmap, rect, rect, paint)
         //Bitmap _bmp = Bitmap.createScaledBitmap(output, 60, 60, false);
         //return _bmp;
-        return output;
+        return output
     }
 
     private fun shared(){
@@ -182,15 +170,15 @@ class MainDetailsActivity : AppCompatActivity() {
     }
 
     fun getImageUri(inImage: Bitmap): Uri {
-          val bytes = ByteArrayOutputStream();
-          inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-          val path = MediaStore.Images.Media.insertImage(
-              this.getContentResolver(),
+          val bytes = ByteArrayOutputStream()
+        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
+        val path = MediaStore.Images.Media.insertImage(
+              this.contentResolver,
               inImage,
               "OzoneNotIncluded_Share",
               null
-          );
-          return Uri.parse(path);
+          )
+        return Uri.parse(path)
     }
 
     private fun initView(){
@@ -254,27 +242,25 @@ class MainDetailsActivity : AppCompatActivity() {
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         val paint2 = Paint()
-        paint2.color = getResources().getColor(R.color.colorGreen)
+        paint2.color = resources.getColor(R.color.colorGreen)
 //        canvas.drawCircle(
 //            width.toFloat()/2,
 //            height.toFloat()/2,
 //            10f,
 //            paint2
 //        )
-        canvas.drawRect(100f, 100f, 200f, 200f, paint2);
+        canvas.drawRect(100f, 100f, 200f, 200f, paint2)
 
         return bitmap
     }
 
     private fun getBitmapFromView(view: View):Bitmap {
-        view.setLayoutParams(
-            RelativeLayout.LayoutParams(
-                RelativeLayout.LayoutParams.MATCH_PARENT,
-                RelativeLayout.LayoutParams.MATCH_PARENT
-            )
-        );
-        val dm = this.getResources().getDisplayMetrics();
-            view.measure(
+        view.layoutParams = RelativeLayout.LayoutParams(
+            RelativeLayout.LayoutParams.MATCH_PARENT,
+            RelativeLayout.LayoutParams.MATCH_PARENT
+        )
+        val dm = this.resources.displayMetrics
+        view.measure(
                 View.MeasureSpec.makeMeasureSpec(
                     dm.widthPixels,
                     View.MeasureSpec.EXACTLY
@@ -283,18 +269,18 @@ class MainDetailsActivity : AppCompatActivity() {
                     dm.heightPixels,
                     View.MeasureSpec.EXACTLY
                 )
-            );
-        view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
+            )
+        view.layout(0, 0, view.measuredWidth, view.measuredHeight)
         val bitmap = Bitmap.createBitmap(
-            view.getMeasuredWidth(),
-            view.getMeasuredHeight(),
+            view.measuredWidth,
+            view.measuredHeight,
             Bitmap.Config.ARGB_8888
-        );
+        )
 
-        val canvas = Canvas(bitmap);
-        view.layout(view.getLeft(), view.getTop(), view.getRight(), view.getBottom());
-        view.draw(canvas);
-        return bitmap;
+        val canvas = Canvas(bitmap)
+        view.layout(view.left, view.top, view.right, view.bottom)
+        view.draw(canvas)
+        return bitmap
     }
 
     override fun onRequestPermissionsResult(
@@ -383,27 +369,27 @@ class MainDetailsActivity : AppCompatActivity() {
                         if (aqi <= 50) {
                             txt_view_quality.text = getString(R.string.txt_good)
                             text_details.text = "ดี"
-                            text_details.setTextColor(getResources().getColor(R.color.colorGreen))
+                            text_details.setTextColor(resources.getColor(R.color.colorGreen))
                         } else if (aqi <= 100) {
                             txt_view_quality.text = getString(R.string.txt_moderate)
                             text_details.text = "ปานกลาง"
-                            text_details.setTextColor(getResources().getColor(R.color.colorYellow))
+                            text_details.setTextColor(resources.getColor(R.color.colorYellow))
                         } else if (aqi <= 150) {
                             txt_view_quality.text = getString(R.string.txt_unhealthy_for_sensitive_groups)
                             text_details.text = "ไม่ดีต่อสุขภาพผู้ป่วยภูมิแพ้"
-                            text_details.setTextColor(getResources().getColor(R.color.colorOrange))
+                            text_details.setTextColor(resources.getColor(R.color.colorOrange))
                         } else if (aqi <= 200) {
                             txt_view_quality.text = getString(R.string.txt_unhealthy)
                             text_details.text = "ไม่ดีต่อสุขภาพ"
-                            text_details.setTextColor(getResources().getColor(R.color.colorPink))
+                            text_details.setTextColor(resources.getColor(R.color.colorPink))
                         } else if (aqi <= 300) {
                             txt_view_quality.text = getString(R.string.txt_very_unhealthy)
                             text_details.text = "ไม่ดีต่อสุขภาพมาก"
-                            text_details.setTextColor(getResources().getColor(R.color.colorViolet))
+                            text_details.setTextColor(resources.getColor(R.color.colorViolet))
                         } else {
                             txt_view_quality.text = getString(R.string.txt_hazardous)
                             text_details.text = "อันตราย"
-                            text_details.setTextColor(getResources().getColor(R.color.colorRed))
+                            text_details.setTextColor(resources.getColor(R.color.colorRed))
                         }
                     }catch (e: Exception){
 
