@@ -33,6 +33,7 @@ import com.google.android.gms.ads.initialization.OnInitializationCompleteListene
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.activity_main_details.*
 import me.duckfollow.ozone.R
+import me.duckfollow.ozone.`interface`.GraphViewInterface
 import me.duckfollow.ozone.adapter.AqiListAdapter
 import me.duckfollow.ozone.adapter.GraphViewAdapter
 import me.duckfollow.ozone.model.AqiModel
@@ -48,9 +49,10 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 
-class MainDetailsActivity : AppCompatActivity() {
+class MainDetailsActivity : AppCompatActivity(),GraphViewInterface {
 
     lateinit var textViewCityName:TextView
     lateinit var txtViewIaqi:TextView
@@ -76,6 +78,12 @@ class MainDetailsActivity : AppCompatActivity() {
     lateinit var myRefGraph: DatabaseReference
 
     var key_data = ""
+
+    var dataGraph = ArrayList<GraphViewModel>()
+    lateinit var adapterGraph:GraphViewAdapter
+
+    lateinit var txt_aqi_graph:TextView
+    lateinit var txt_date_graph:TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -123,6 +131,23 @@ class MainDetailsActivity : AppCompatActivity() {
         })
 
         refreshAd()
+
+        val graphView = findViewById<RecyclerView>(R.id.graph_view)
+
+
+        adapterGraph = GraphViewAdapter(dataGraph,this)
+        graphView.adapter = adapterGraph
+
+        graphView.layoutManager = LinearLayoutManager(this@MainDetailsActivity)
+        graphView.layoutManager = LinearLayoutManager(
+            this@MainDetailsActivity,
+            LinearLayoutManager.HORIZONTAL,
+            false
+        )
+
+        graphView.setScrollingTouchSlop(RecyclerView.TOUCH_SLOP_PAGING)
+        val snapHelper = LinearSnapHelper() // Or PagerSnapHelper
+        snapHelper.attachToRecyclerView(graphView)
 
     }
 
@@ -205,6 +230,9 @@ class MainDetailsActivity : AppCompatActivity() {
         list_iaqi.setScrollingTouchSlop(RecyclerView.TOUCH_SLOP_PAGING)
         val snapHelper = LinearSnapHelper() // Or PagerSnapHelper
         snapHelper.attachToRecyclerView(list_iaqi)
+
+        txt_aqi_graph = findViewById<TextView>(R.id.txt_aqi_graph)
+        txt_date_graph = findViewById<TextView>(R.id.txt_date_graph)
     }
 
     fun showShared(){
@@ -366,31 +394,13 @@ class MainDetailsActivity : AppCompatActivity() {
                         }else {
                             aqi / 5
                         }
-                        if (aqi <= 50) {
-                            txt_view_quality.text = getString(R.string.txt_good)
-                            text_details.text = "ดี"
-                            text_details.setTextColor(resources.getColor(R.color.colorGreen))
-                        } else if (aqi <= 100) {
-                            txt_view_quality.text = getString(R.string.txt_moderate)
-                            text_details.text = "ปานกลาง"
-                            text_details.setTextColor(resources.getColor(R.color.colorYellow))
-                        } else if (aqi <= 150) {
-                            txt_view_quality.text = getString(R.string.txt_unhealthy_for_sensitive_groups)
-                            text_details.text = "ไม่ดีต่อสุขภาพผู้ป่วยภูมิแพ้"
-                            text_details.setTextColor(resources.getColor(R.color.colorOrange))
-                        } else if (aqi <= 200) {
-                            txt_view_quality.text = getString(R.string.txt_unhealthy)
-                            text_details.text = "ไม่ดีต่อสุขภาพ"
-                            text_details.setTextColor(resources.getColor(R.color.colorPink))
-                        } else if (aqi <= 300) {
-                            txt_view_quality.text = getString(R.string.txt_very_unhealthy)
-                            text_details.text = "ไม่ดีต่อสุขภาพมาก"
-                            text_details.setTextColor(resources.getColor(R.color.colorViolet))
-                        } else {
-                            txt_view_quality.text = getString(R.string.txt_hazardous)
-                            text_details.text = "อันตราย"
-                            text_details.setTextColor(resources.getColor(R.color.colorRed))
-                        }
+
+                        val dataAQI = MainDetailsActivity().getDataAQI(aqi)
+
+                        txt_view_quality.text = dataAQI["txt_quality"].toString()
+                        text_details.text = dataAQI["txt_detail"].toString()
+                        text_details.setTextColor(dataAQI["color_aqi"].toString().toInt())
+
                     }catch (e: Exception){
 
                     }
@@ -431,29 +441,13 @@ class MainDetailsActivity : AppCompatActivity() {
                 val dateFormatted = current.format(dateFormat)
 
                 val data_graph = HashMap<String, Any>()
-                data_graph.put("date", formatted2)
-                data_graph.put("text", pm2Text)
-                data_graph.put("timestamp", timestamp)
-                data_graph.put("datestamp", dateFormatted)
+                data_graph["date"] = formatted2
+                data_graph["text"] = pm2Text
+                data_graph["timestamp"] = timestamp
+                data_graph["datestamp"] = dateFormatted
 
-                myRefGraph.child(key_data + "/" + formatted + pm2Text).updateChildren(data_graph)
+                myRefGraph.child("$key_data/$formatted$pm2Text").updateChildren(data_graph)
 
-                val graphView = findViewById<RecyclerView>(R.id.graph_view)
-                var dataGraph = ArrayList<GraphViewModel>()
-
-                val adapterGraph = GraphViewAdapter(dataGraph)
-                graphView.adapter = adapterGraph
-
-                graphView.layoutManager = LinearLayoutManager(this@MainDetailsActivity)
-                graphView.layoutManager = LinearLayoutManager(
-                    this@MainDetailsActivity,
-                    LinearLayoutManager.HORIZONTAL,
-                    false
-                )
-
-                graphView.setScrollingTouchSlop(RecyclerView.TOUCH_SLOP_PAGING)
-                val snapHelper = LinearSnapHelper() // Or PagerSnapHelper
-                snapHelper.attachToRecyclerView(graphView)
 
                 val GraphListener = object : ValueEventListener {
                     override fun onCancelled(p0: DatabaseError) {
@@ -466,24 +460,34 @@ class MainDetailsActivity : AppCompatActivity() {
                         while (i.hasNext()) {
                             val i_data = (i.next() as DataSnapshot)
                             val date = i_data.child("date").value.toString()
+                            val timestamp = i_data.child("timestamp").value.toString()
+                            val datestamp = i_data.child("datestamp").value.toString()
                             val aqi = i_data.child("text").value.toString().toInt()
-                            var  color = "#4caf50"
-                            if (aqi <= 50) {
-                                color = "#4caf50"
-                            } else if (aqi <= 100) {
-                                color = "#ffeb3b"
-                            } else if (aqi <= 150) {
-                                color = "#ffc107"
-                            } else if (aqi <= 200) {
-                                color = "#f44336"
-                            } else if (aqi <= 300) {
-                                color = "#9c27b0"
-                            } else {
-                                color = "#bb1950"
+                            val color = when {
+                                aqi <= 50 -> {
+                                    "#4caf50"
+                                }
+                                aqi <= 100 -> {
+                                    "#ffeb3b"
+                                }
+                                aqi <= 150 -> {
+                                    "#ffc107"
+                                }
+                                aqi <= 200 -> {
+                                    "#f44336"
+                                }
+                                aqi <= 300 -> {
+                                    "#9c27b0"
+                                }
+                                else -> {
+                                    "#bb1950"
+                                }
                             }
-                            dataGraph.add(GraphViewModel(date, aqi, color))
+                            dataGraph.add(GraphViewModel(date,timestamp,datestamp, aqi, color))
 
                         }
+//                        txt_aqi_graph.text = dataGraph[dataGraph.size-1].aqi.toString()
+//                        txt_date_graph.text = dataGraph[dataGraph.size-1].datestamp
                         adapterGraph.notifyDataSetChanged()
                     }
 
@@ -502,88 +506,41 @@ class MainDetailsActivity : AppCompatActivity() {
                     }
                 }, 1000)
             }catch (e: Exception){
-
+                Toast.makeText(this@MainDetailsActivity,"ไม่พบข้อมูล",Toast.LENGTH_LONG).show()
+                this@MainDetailsActivity.finish()
             }
-
-
-//            try {
-//                val gson = Gson()
-//                val dataDetails = gson.fromJson<WaqiInfoGeo>(result, WaqiInfoGeo::class.java)
-//                Log.d("data_res", result)
-//
-//                try {
-//                    data.add(AqiModel("co", dataDetails.data.iaqi.co.v))
-//                } catch (e: Exception) {
-//
-//                }
-//                try {
-//                    data.add(AqiModel("no2", dataDetails.data.iaqi.no2.v))
-//                } catch (e: Exception) {
-//
-//                }
-//                try {
-//                    data.add(AqiModel("o3", dataDetails.data.iaqi.o3.v))
-//                } catch (e: Exception) {
-//
-//                }
-//                try {
-//                    data.add(AqiModel("pm10", dataDetails.data.iaqi.pm10.v))
-//                } catch (e: Exception) {
-//
-//                }
-//                try {
-//                    val pm25 = dataDetails.data.iaqi.pm25.v
-//                    data.add(AqiModel("pm25", pm25))
-//                    try {
-//                        val aqi = pm25.toInt()
-//                        if (aqi <= 50) {
-//                            txt_view_quality.text = getString(R.string.txt_good)
-//                        } else if (aqi <= 100) {
-//                            txt_view_quality.text = getString(R.string.txt_moderate)
-//                        } else if (aqi <= 150) {
-//                            txt_view_quality.text = getString(R.string.txt_unhealthy_for_sensitive_groups)
-//                        } else if (aqi <= 200) {
-//                            txt_view_quality.text = getString(R.string.txt_unhealthy)
-//                        } else if (aqi <= 300) {
-//                            txt_view_quality.text = getString(R.string.txt_very_unhealthy)
-//                        } else {
-//                            txt_view_quality.text = getString(R.string.txt_hazardous)
-//                        }
-//                    }catch (e:Exception){
-//
-//                    }
-//                } catch (e: Exception) {
-//
-//                }
-//                try {
-//                    data.add(AqiModel("so2", dataDetails.data.iaqi.so2.v))
-//                } catch (e: Exception) {
-//
-//                }
-//                try {
-//                    data.add(AqiModel("w", dataDetails.data.iaqi.w.v))
-//                } catch (e: Exception) {
-//
-//                }
-//                try {
-//                    data.add(AqiModel("wg", dataDetails.data.iaqi.wg.v))
-//                } catch (e: Exception) {
-//
-//                }
-//                adapter.notifyDataSetChanged()
-//
-//                textViewCityName.text = dataDetails.data.city.name
-//                txtViewIaqi.text = dataDetails.data.aqi
-//
-//                Handler().postDelayed(Runnable {
-//                    shimmer_view_container.stopShimmer()
-//                    shimmer_view_container.visibility = View.GONE
-//                    scroll_view.visibility = View.VISIBLE
-//                },1000)
-//            }catch (e:Exception){
-//
-//            }
         }
+    }
+
+    private fun getDataAQI(aqi:Int):HashMap<String,Any> {
+        val data = HashMap<String,Any>()
+        if (aqi <= 50) {
+            data["txt_quality"] = getString(R.string.txt_good)
+            data["txt_detail"] = "ดี"
+            data["color_aqi"] = resources.getColor(R.color.colorGreen)
+        } else if (aqi <= 100) {
+            data["txt_quality"] = getString(R.string.txt_moderate)
+            data["txt_detail"] = "ปานกลาง"
+            data["color_aqi"] = resources.getColor(R.color.colorYellow)
+        } else if (aqi <= 150) {
+            data["txt_quality"] = getString(R.string.txt_unhealthy_for_sensitive_groups)
+            data["txt_detail"] = "ไม่ดีต่อสุขภาพผู้ป่วยภูมิแพ้"
+            data["color_aqi"] = resources.getColor(R.color.colorOrange)
+        } else if (aqi <= 200) {
+            data["txt_quality"] = getString(R.string.txt_unhealthy)
+            data["txt_detail"] = "ไม่ดีต่อสุขภาพ"
+            data["color_aqi"] = resources.getColor(R.color.colorPink)
+        } else if (aqi <= 300) {
+            data["txt_quality"] = getString(R.string.txt_very_unhealthy)
+            data["txt_detail"] = "ไม่ดีต่อสุขภาพมาก"
+            data["color_aqi"] = resources.getColor(R.color.colorViolet)
+        } else {
+            data["txt_quality"] = getString(R.string.txt_hazardous)
+            data["txt_detail"] = "อันตราย"
+            data["color_aqi"] = resources.getColor(R.color.colorRed)
+        }
+
+        return data
     }
 
     /**
@@ -729,6 +686,14 @@ class MainDetailsActivity : AppCompatActivity() {
     override fun onDestroy() {
         currentNativeAd?.destroy()
         super.onDestroy()
+    }
+
+    override fun GraphViewClick(position: Int) {
+        //Graph Click
+//        Toast.makeText(this,position.toString(),Toast.LENGTH_LONG).show()
+        val data = getDataAQI(dataGraph[position].aqi)
+        txt_aqi_graph.text = data["txt_detail"].toString() + " AQI " + dataGraph[position].aqi.toString()
+        txt_date_graph.text = dataGraph[position].datestamp
     }
 
 }

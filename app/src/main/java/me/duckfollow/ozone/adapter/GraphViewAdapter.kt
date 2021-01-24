@@ -7,9 +7,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.custom_graph_view.view.*
 import me.duckfollow.ozone.R
+import me.duckfollow.ozone.`interface`.GraphViewInterface
 import me.duckfollow.ozone.model.GraphViewModel
 
-class GraphViewAdapter (val item:ArrayList<GraphViewModel>) : RecyclerView.Adapter<ViewHolderGraphView>(){
+class GraphViewAdapter (val item:ArrayList<GraphViewModel>,val listener:GraphViewInterface) : RecyclerView.Adapter<ViewHolderGraphView>(){
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolderGraphView {
         return ViewHolderGraphView(LayoutInflater.from(parent.context).inflate(R.layout.custom_graph_view, parent, false))
     }
@@ -32,6 +33,9 @@ class GraphViewAdapter (val item:ArrayList<GraphViewModel>) : RecyclerView.Adapt
         } else {
             text1 = item[position].date
             holder.text_date.text = text1
+        }
+        holder.view_graph.setOnClickListener {
+            listener.GraphViewClick(position)
         }
     }
 }
