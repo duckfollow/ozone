@@ -19,6 +19,7 @@ import android.view.View
 import android.widget.*
 import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AlertDialog
+import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -104,6 +105,8 @@ class ProfileActivity : AppCompatActivity() {
     var ADMOB_AD_UNIT_ID = ""
     var currentNativeAd: UnifiedNativeAd? = null
 
+    lateinit var card_view_ad:CardView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
@@ -122,8 +125,12 @@ class ProfileActivity : AppCompatActivity() {
 
         val imgprofile = UserProfile(this).getImageBase64()
         if(imgprofile != "") {
-            val b = ConvertImagetoBase64().base64ToBitmap(imgprofile)
-            img_profile.setImageBitmap(b)
+            try {
+                val b = ConvertImagetoBase64().base64ToBitmap(imgprofile)
+                img_profile.setImageBitmap(b)
+            }catch (e:Exception) {
+
+            }
         }
 
         val database = FirebaseDatabase.getInstance().reference
@@ -212,7 +219,7 @@ class ProfileActivity : AppCompatActivity() {
         MobileAds.initialize(application, OnInitializationCompleteListener {
         })
 
-        refreshAd()
+//        refreshAd()
 
     }
 
@@ -224,6 +231,8 @@ class ProfileActivity : AppCompatActivity() {
         qr_code_id = findViewById(R.id.qr_code_id)
         text_id = findViewById(R.id.text_id)
         list_family = findViewById(R.id.list_family)
+
+        card_view_ad = findViewById(R.id.card_view_ad)
     }
 
     fun showProfile(){
@@ -681,10 +690,12 @@ class ProfileActivity : AppCompatActivity() {
                     """
            domain: ${loadAdError.domain}, code: ${loadAdError.code}, message: ${loadAdError.message}
           """"
-                Toast.makeText(
-                    this@ProfileActivity, "Failed to load native ad with error $error",
-                    Toast.LENGTH_SHORT
-                ).show()
+//                Toast.makeText(
+//                    this@ProfileActivity, "Failed to load native ad with error $error",
+//                    Toast.LENGTH_SHORT
+//                ).show()
+
+                card_view_ad.visibility = View.GONE
             }
         }).build()
         adLoader.loadAd(AdRequest.Builder().build())

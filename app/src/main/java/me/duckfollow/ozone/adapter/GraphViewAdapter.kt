@@ -10,9 +10,16 @@ import me.duckfollow.ozone.R
 import me.duckfollow.ozone.`interface`.GraphViewInterface
 import me.duckfollow.ozone.model.GraphViewModel
 
-class GraphViewAdapter (val item:ArrayList<GraphViewModel>,val listener:GraphViewInterface) : RecyclerView.Adapter<ViewHolderGraphView>(){
+
+class GraphViewAdapter(val item: ArrayList<GraphViewModel>, val listener: GraphViewInterface) : RecyclerView.Adapter<ViewHolderGraphView>(){
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolderGraphView {
-        return ViewHolderGraphView(LayoutInflater.from(parent.context).inflate(R.layout.custom_graph_view, parent, false))
+        return ViewHolderGraphView(
+            LayoutInflater.from(parent.context).inflate(
+                R.layout.custom_graph_view,
+                parent,
+                false
+            )
+        )
     }
 
     override fun getItemCount(): Int {
@@ -20,11 +27,18 @@ class GraphViewAdapter (val item:ArrayList<GraphViewModel>,val listener:GraphVie
     }
 
     override fun onBindViewHolder(holder: ViewHolderGraphView, position: Int) {
-        holder.view_graph.layoutParams.height = item[position].aqi *2
+        holder.view_graph.layoutParams.height = item[position].aqi * 2
         holder.view_graph.setBackgroundColor(Color.parseColor(item[position].color))
+
+
         var text1 = ""
         if (position > 0) {
-            if (item[position - 1].date.replace(" ","").equals(item[position].date.replace(" ",""))) {
+            if (item[position - 1].date.replace(" ", "").equals(
+                    item[position].date.replace(
+                        " ",
+                        ""
+                    )
+                )) {
                 text1 = ""
             } else {
                 text1 = item[position].date
@@ -36,6 +50,8 @@ class GraphViewAdapter (val item:ArrayList<GraphViewModel>,val listener:GraphVie
         }
         holder.view_graph.setOnClickListener {
             listener.GraphViewClick(position)
+            notifyItemChanged(position)
+            it.setBackgroundColor(Color.parseColor("#2E4053"))
         }
     }
 }

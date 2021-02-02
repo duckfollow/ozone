@@ -23,8 +23,12 @@ class SharedActivity : AppCompatActivity() {
 
         val img_base64 = UserProfile(this).getImageBase64()
         if(img_base64 != "") {
-            val b = ConvertImagetoBase64().base64ToBitmap(img_base64)
-            img_profile_share.setImageBitmap(getCroppedBitmap(b))
+            try {
+                val b = ConvertImagetoBase64().base64ToBitmap(img_base64)
+                img_profile_share.setImageBitmap(getCroppedBitmap(b))
+            }catch (e:Exception) {
+
+            }
         }
 
         val i = intent.extras

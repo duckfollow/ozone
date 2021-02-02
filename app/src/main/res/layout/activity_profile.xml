@@ -122,13 +122,15 @@
     </androidx.recyclerview.widget.RecyclerView>
 
             <androidx.cardview.widget.CardView
+                android:id="@+id/card_view_ad"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
                 app:cardCornerRadius="10dp"
                 app:cardBackgroundColor="@color/white"
                 android:layout_below="@id/list_family"
-                android:minHeight="200dp">
+                android:minHeight="200dp"
+                android:visibility="gone">
 
                 <FrameLayout
                     android:id="@+id/ad_frame"

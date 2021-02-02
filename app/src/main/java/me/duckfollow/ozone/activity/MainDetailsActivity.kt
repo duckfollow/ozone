@@ -15,6 +15,7 @@ import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.widget.NestedScrollView
@@ -85,6 +86,9 @@ class MainDetailsActivity : AppCompatActivity(),GraphViewInterface {
     lateinit var txt_aqi_graph:TextView
     lateinit var txt_date_graph:TextView
 
+    lateinit var card_view_ad:CardView
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main_details)
@@ -123,14 +127,18 @@ class MainDetailsActivity : AppCompatActivity(),GraphViewInterface {
 
         val img_base64 = UserProfile(this).getImageBase64()
         if(img_base64 != "") {
-            val b = ConvertImagetoBase64().base64ToBitmap(img_base64)
+            try {
+                val b = ConvertImagetoBase64().base64ToBitmap(img_base64)
 //            img_profile_share.setImageBitmap(getCroppedBitmap(b))
+            }catch (e:java.lang.Exception) {
+
+            }
         }
 
         MobileAds.initialize(application, OnInitializationCompleteListener {
         })
 
-        refreshAd()
+//        refreshAd()
 
         val graphView = findViewById<RecyclerView>(R.id.graph_view)
 
@@ -233,6 +241,8 @@ class MainDetailsActivity : AppCompatActivity(),GraphViewInterface {
 
         txt_aqi_graph = findViewById<TextView>(R.id.txt_aqi_graph)
         txt_date_graph = findViewById<TextView>(R.id.txt_date_graph)
+
+        card_view_ad = findViewById(R.id.card_view_ad)
     }
 
     fun showShared(){
@@ -675,10 +685,11 @@ class MainDetailsActivity : AppCompatActivity(),GraphViewInterface {
                     """
            domain: ${loadAdError.domain}, code: ${loadAdError.code}, message: ${loadAdError.message}
           """"
-                Toast.makeText(
-                    this@MainDetailsActivity, "Failed to load native ad with error $error",
-                    Toast.LENGTH_SHORT
-                ).show()
+//                Toast.makeText(
+//                    this@MainDetailsActivity, "Failed to load native ad with error $error",
+//                    Toast.LENGTH_SHORT
+//                ).show()
+                card_view_ad.visibility = View.GONE
             }
         }).build()
         adLoader.loadAd(AdRequest.Builder().build())

@@ -468,8 +468,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     private fun myLocation(){
         var img = user_marker()
         if(UserProfile(this).getImageBase64() != ""){
-            val b = ConvertImagetoBase64().base64ToBitmap(UserProfile(this).getImageBase64())
-            img = getCroppedBitmap(ConvertImagetoBase64().getResizedBitmap(b,150,150))
+            try {
+                val b = ConvertImagetoBase64().base64ToBitmap(UserProfile(this).getImageBase64())
+                img = getCroppedBitmap(ConvertImagetoBase64().getResizedBitmap(b, 150, 150))
+            }catch (e:java.lang.Exception) {
+
+            }
         }
         mMap.clear()
         val marker_user = mMap.addMarker(
@@ -518,8 +522,12 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
         val markerImageView = customMarkerView.findViewById<ImageView>(R.id.profile_image)
         var img = user_marker()
         if(UserProfile(this).getImageBase64() != ""){
-            val b = ConvertImagetoBase64().base64ToBitmap(UserProfile(this).getImageBase64())
-            img = getCroppedBitmap(ConvertImagetoBase64().getResizedBitmap(b,150,150))
+            try {
+                val b = ConvertImagetoBase64().base64ToBitmap(UserProfile(this).getImageBase64())
+                img = getCroppedBitmap(ConvertImagetoBase64().getResizedBitmap(b, 150, 150))
+            }catch (e:java.lang.Exception) {
+
+            }
         }
         markerImageView.setImageBitmap(img)
         customMarkerView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
@@ -805,8 +813,12 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
     override fun onMarkerDragEnd(p0: Marker?) {
         var img = user_marker()
         if(UserProfile(this).getImageBase64() != ""){
-            val b = ConvertImagetoBase64().base64ToBitmap(UserProfile(this).getImageBase64())
-            img = getCroppedBitmap(ConvertImagetoBase64().getResizedBitmap(b,150,150))
+            try {
+                val b = ConvertImagetoBase64().base64ToBitmap(UserProfile(this).getImageBase64())
+                img = getCroppedBitmap(ConvertImagetoBase64().getResizedBitmap(b, 150, 150))
+            }catch (e:java.lang.Exception) {
+
+            }
         }
             mMap.clear()
             mLat = p0!!.position.latitude
