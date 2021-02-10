@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animation-list
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:oneshot="false">
+    <item android:drawable="@drawable/clouds01" android:duration="250" />
+    <item android:drawable="@drawable/clouds02" android:duration="250" />
+    <item android:drawable="@drawable/clouds03" android:duration="250" />
+    <item android:drawable="@drawable/clouds04" android:duration="250" />
+    <item android:drawable="@drawable/clouds05" android:duration="250" />
+    <item android:drawable="@drawable/clouds06" android:duration="250" />
+    <item android:drawable="@drawable/clouds07" android:duration="250" />
+    <item android:drawable="@drawable/clouds08" android:duration="250" />
+    <item android:drawable="@drawable/clouds09" android:duration="250" />
+    <item android:drawable="@drawable/clouds10" android:duration="250" />
+    <item android:drawable="@drawable/clouds11" android:duration="250" />
+    <item android:drawable="@drawable/clouds12" android:duration="250" />
+    <item android:drawable="@drawable/clouds13" android:duration="250" />
+</animation-list>

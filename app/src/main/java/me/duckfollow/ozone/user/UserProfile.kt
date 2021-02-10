@@ -92,6 +92,30 @@ class UserProfile {
         return User.getString("namestation","ยังไม่มีข้อมูล")!!
     }
 
+    fun setMyLat(lat:String) {
+        this.setUserData("myLat", lat)
+    }
+
+    fun getMyLat():String {
+        return User.getString("myLat","13.773227")!!
+    }
+
+    fun setMyLong(lat:String) {
+        this.setUserData("myLong", lat)
+    }
+
+    fun getMyLong():String {
+        return User.getString("myLong","100.5689558")!!
+    }
+
+    fun setWeatherCode(code:String) {
+        this.setUserData("WeatherCode", code)
+    }
+
+    fun getWeatherCode():String {
+        return User.getString("WeatherCode","801")!!
+    }
+
 
     fun setUserData(key:String,value:String){
         editor = User.edit()

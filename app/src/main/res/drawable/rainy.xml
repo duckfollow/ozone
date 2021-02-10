@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animation-list
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:oneshot="false">
+    <item android:drawable="@drawable/rainy01" android:duration="100" />
+    <item android:drawable="@drawable/rainy02" android:duration="100" />
+    <item android:drawable="@drawable/rainy03" android:duration="100" />
+    <item android:drawable="@drawable/rainy04" android:duration="100" />
+    <item android:drawable="@drawable/rainy05" android:duration="100" />
+    <item android:drawable="@drawable/rainy06" android:duration="100" />
+    <item android:drawable="@drawable/rainy07" android:duration="100" />
+    <item android:drawable="@drawable/rainy08" android:duration="100" />
+    <item android:drawable="@drawable/rainy09" android:duration="100" />
+    <item android:drawable="@drawable/rainy10" android:duration="100" />
+    <item android:drawable="@drawable/rainy11" android:duration="100" />
+    <item android:drawable="@drawable/rainy12" android:duration="100" />
+    <item android:drawable="@drawable/rainy13" android:duration="100" />
+    <item android:drawable="@drawable/rainy14" android:duration="100" />
+    <item android:drawable="@drawable/rainy15" android:duration="100" />
+    <item android:drawable="@drawable/rainy16" android:duration="100" />
+    <item android:drawable="@drawable/rainy17" android:duration="100" />
+    <item android:drawable="@drawable/rainy18" android:duration="100" />
+    <item android:drawable="@drawable/rainy19" android:duration="100" />
+    <item android:drawable="@drawable/rainy20" android:duration="100" />
+</animation-list>

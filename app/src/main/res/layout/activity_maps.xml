@@ -151,6 +151,21 @@
 
     </androidx.cardview.widget.CardView>
 
+    <!--image view -->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/image_animation"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:background="@drawable/clouds"/>
+
+    </LinearLayout>
+
     <Button
         android:id="@+id/btn_menu"
         android:layout_width="match_parent"
