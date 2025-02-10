@@ -523,7 +523,7 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
             marker_user.tag = "user_location"
             marker_user.zIndex = 1F
             val url =
-                "https://api.waqi.info/map/bounds/?latlng=" /*+ p0.position.latitude + "," + p0.position.longitude + "," */+ (p0.position.latitude + 1) + "," + (p0.position.longitude + 1)+ "," + (p0.position.latitude - 1) + "," + (p0.position.longitude - 1) + "&token=fe5f8a6aa99f6bfb397762a0cade98a6d78795a6"
+                "https://api.waqi.info/map/bounds/?latlng=" /*+ p0.position.latitude + "," + p0.position.longitude + "," */+ (p0.position.latitude + 1) + "," + (p0.position.longitude + 1)+ "," + (p0.position.latitude - 1) + "," + (p0.position.longitude - 1) + "&token=XXX"
             TaskDataLocation(mLat,mLong).execute(url)
     }
 
