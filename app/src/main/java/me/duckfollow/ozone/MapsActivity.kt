@@ -261,7 +261,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         marker_user.isDraggable = true
         marker_user.tag = "user_location"
         marker_user.zIndex = 1F
-        val url = "https://api.waqi.info/map/bounds/?latlng="/*+mLat+","+mLong+","*/+(mLat+1)+","+(mLong+1)+","+(mLat-1)+","+(mLong-1)+"&token=fe5f8a6aa99f6bfb397762a0cade98a6d78795a6"
+        val url = "https://api.waqi.info/map/bounds/?latlng="/*+mLat+","+mLong+","*/+(mLat+1)+","+(mLong+1)+","+(mLat-1)+","+(mLong-1)+"&token=XXXXXXX"
         TaskDataLocation(mLat,mLong).execute(url)
     }
 
@@ -342,7 +342,7 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
         Log.d("location_app",p0!!.latitude.toString()+"//"+p0.longitude)
         mLat = p0.latitude
         mLong = p0.longitude
-        val url = "https://api.waqi.info/feed/geo:"+p0.latitude+";"+p0.longitude+"/?token=fe5f8a6aa99f6bfb397762a0cade98a6d78795a6"
+        val url = "https://api.waqi.info/feed/geo:"+p0.latitude+";"+p0.longitude+"/?token=XXXX"
         //Toast.makeText(this@MapsActivity,url,Toast.LENGTH_LONG).show()
         TaskDataRealTime().execute(url)
 
