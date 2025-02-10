@@ -558,7 +558,7 @@ fun getCroppedBitmap(bitmap:Bitmap):Bitmap {
         marker_user.isDraggable = true
         marker_user.tag = "user_location"
         marker_user.zIndex = 1F
-        val url = "https://api.waqi.info/map/bounds/?latlng="/*+p0.latitude+","+p0.longitude+","*/+(p0.latitude+1)+","+(p0.longitude+1)+","+(p0.latitude-1)+","+(p0.longitude-1)+"&token=fe5f8a6aa99f6bfb397762a0cade98a6d78795a6"
+        val url = "https://api.waqi.info/map/bounds/?latlng="/*+p0.latitude+","+p0.longitude+","*/+(p0.latitude+1)+","+(p0.longitude+1)+","+(p0.latitude-1)+","+(p0.longitude-1)+"&token=XXXX"
         TaskDataLocation(mLat,mLong).execute(url)
     }
 
